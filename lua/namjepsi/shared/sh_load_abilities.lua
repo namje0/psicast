@@ -1,18 +1,36 @@
-namjepsi.AbilityData = {}
+namjepsi.ability_data = {}
+namjepsi.ability_effects = {}
 
-local FILE_PATH = "namjepsi/abilities/data/"
+local FILE_PATH = "namjepsi/abilities/"
 
-local function load_ability_data()
+function namjepsi.load_ability_data()
     local id = 0
-    for _, v in pairs(file.Find(FILE_PATH .. "*", "LUA")) do
+    for _, v in pairs(file.Find(FILE_PATH .. "data/*", "LUA")) do
         if v == "template.lua" then return end
-        include(FILE_PATH .. v)
-        AddCSLuaFile(FILE_PATH .. v)
+        include(FILE_PATH .. "data/" .. v)
+        AddCSLuaFile(FILE_PATH .. "data/" .. v)
         local psi_ability = v:gsub("%.lua","")
-        namjepsi.AbilityData[psi_ability]["ID"] = id
+
+        print("Loading PSI Ability Data for " .. psi_ability)
+        print(namjepsi.ability_data[psi_ability])
+        namjepsi.ability_data[psi_ability]["id"] = id
         id = id + 1
-        print("Registered PSI Ability Data: " .. psi_ability)
     end
+    print("Finished loading PSI Ability Data")
+    PrintTable(namjepsi.ability_data)
 end
 
-load_ability_data()
+function namjepsi.load_ability_effects()
+    for _, v in pairs(file.Find(FILE_PATH .. "effects/*", "LUA")) do
+        if v == "template.lua" then return end
+        include(FILE_PATH .. "effects/" .. v)
+        AddCSLuaFile(FILE_PATH .. "effects/" .. v)
+        local psi_ability = v:gsub("%.lua","")
+        print("Loading PSI Ability Effect for " .. psi_ability)
+    end
+    print("Finished loading PSI Ability Effects")
+    PrintTable(namjepsi.ability_effects)
+end
+
+namjepsi.load_ability_data()
+namjepsi.load_ability_effects()

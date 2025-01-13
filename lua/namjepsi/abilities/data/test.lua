@@ -1,4 +1,4 @@
-PSIAbilityData["test"] = {
+namjepsi.ability_data["test"] = {
 	IntName = "test",
 	Name = "Test Ability",
 	Desc = "Test test test, test",
