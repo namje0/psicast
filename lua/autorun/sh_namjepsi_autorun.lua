@@ -25,7 +25,7 @@ for _, v in pairs(file.Find("namjepsi/client/*", "LUA")) do
     end
 end
 
-if SERVER or game.SinglePlayer() then
+if SERVER then
     for _, v in pairs(file.Find("namjepsi/server/*", "LUA")) do
         include("namjepsi/server/" .. v)
     end
