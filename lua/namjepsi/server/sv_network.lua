@@ -1,4 +1,5 @@
 util.AddNetworkString( "namjepsi_cast" )
+util.AddNetworkString( "namjepsi_update_inventory" )
 
 --singleplayer slowing down time
 if game.SinglePlayer() then

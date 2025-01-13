@@ -3,7 +3,7 @@ local FILE_PATH = "namjepsi/abilities/"
 
 local function create_entity(ability)
     local ent = {}
-    ent.Base = "namje_ability_base"
+    ent.Base = "namjepsi_ability_base"
     ent.Category = ability.entCategory or "PSIcast - Abilities"
     ent.Spawnable = true
     ent.AdminOnly = ability.adminOnly or false
@@ -12,7 +12,7 @@ local function create_entity(ability)
     ent.Icon = ability.icon or "vgui/stimlogo.png"
     ent.Model = ability.model or "models/Items/battery.mdl"
 
-    scripted_ents.Register(ent, ability.name)
+    scripted_ents.Register(ent, ability.intName)
 end
 
 function namjepsi.load_ability()
