@@ -1,16 +1,20 @@
 AddCSLuaFile()
 
-ENT.Type = "anim"
-ENT.Base = "base_anim"
-ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
-ENT.PrintName = "PSI Hypo"
-ENT.Category = "PSIcast"
-ENT.Spawnable = true
+ENT.Type                     = "anim"
+ENT.Base                     = "base_anim"
+ENT.RenderGroup              = RENDERGROUP_TRANSLUCENT
+ENT.PrintName                = "PSI Ability Base"
+ENT.Category                 = "PSIcast - Abilities"
+ENT.Spawnable		= true
 ENT.AdminOnly = false
+ENT.Icon = "vgui/stimlogo.png"
+
+--The ability to give to the player when used by them
+ENT.Ability = "test"
 
 if SERVER then
     function ENT:Initialize()
-        self:SetModel("models/namje/psychostim.mdl")
+        self:SetModel("models/Items/battery.mdl")
 
         self:PhysicsInit(SOLID_VPHYSICS)
         self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -28,6 +32,7 @@ if SERVER then
     end
 
     function ENT:Use(activator, caller)
+        --TODO: Add ability to player
         if (activator:IsPlayer()) then
             activator:GiveAmmo(1, "namje_psychostim")
             self:Remove()

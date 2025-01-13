@@ -1,36 +1,36 @@
-namjepsi.ability_data = {}
-namjepsi.ability_effects = {}
-
+namjepsi.abilities = {}
 local FILE_PATH = "namjepsi/abilities/"
 
-function namjepsi.load_ability_data()
+local function create_entity(ability)
+    local ent = {}
+    ent.Base = "namje_ability_base"
+    ent.Category = ability.entCategory or "PSIcast - Abilities"
+    ent.Spawnable = true
+    ent.AdminOnly = ability.adminOnly or false
+    ent.PrintName = ability.name
+    ent.Ability = ability.intName
+    ent.Icon = ability.icon or "vgui/stimlogo.png"
+    ent.Model = ability.model or "models/Items/battery.mdl"
+
+    scripted_ents.Register(ent, ability.name)
+end
+
+function namjepsi.load_ability()
     local id = 0
-    for _, v in pairs(file.Find(FILE_PATH .. "data/*", "LUA")) do
-        if v == "template.lua" then return end
-        include(FILE_PATH .. "data/" .. v)
-        AddCSLuaFile(FILE_PATH .. "data/" .. v)
+    for _, v in pairs(file.Find(FILE_PATH .. "/*", "LUA")) do
+        if v == "template.lua" then continue end
+        include(FILE_PATH .. v)
+        AddCSLuaFile(FILE_PATH .. v)
         local psi_ability = v:gsub("%.lua","")
 
-        print("Loading PSI Ability Data for " .. psi_ability)
-        print(namjepsi.ability_data[psi_ability])
-        namjepsi.ability_data[psi_ability]["id"] = id
+        print("Loading PSI Ability for " .. psi_ability)
+        print(namjepsi.abilities[psi_ability])
+        namjepsi.abilities[psi_ability]["id"] = id
+        create_entity(namjepsi.abilities[psi_ability])
         id = id + 1
     end
-    print("Finished loading PSI Ability Data")
-    PrintTable(namjepsi.ability_data)
+    print("Finished loading PSI Abilities")
+    PrintTable(namjepsi.abilities)
 end
 
-function namjepsi.load_ability_effects()
-    for _, v in pairs(file.Find(FILE_PATH .. "effects/*", "LUA")) do
-        if v == "template.lua" then return end
-        include(FILE_PATH .. "effects/" .. v)
-        AddCSLuaFile(FILE_PATH .. "effects/" .. v)
-        local psi_ability = v:gsub("%.lua","")
-        print("Loading PSI Ability Effect for " .. psi_ability)
-    end
-    print("Finished loading PSI Ability Effects")
-    PrintTable(namjepsi.ability_effects)
-end
-
-namjepsi.load_ability_data()
-namjepsi.load_ability_effects()
+namjepsi.load_ability()

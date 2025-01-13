@@ -1,11 +1,11 @@
 AddCSLuaFile()
 
-ENT.Type                     = "anim"
-ENT.Base                     = "base_anim"
-ENT.RenderGroup              = RENDERGROUP_TRANSLUCENT
-ENT.PrintName                = "Lotta Hypos"
-ENT.Category                 = "PSIcast"
-ENT.Spawnable		= true
+ENT.Type = "anim"
+ENT.Base = "base_anim"
+ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
+ENT.PrintName = "Lotta Hypos"
+ENT.Category = "PSIcast"
+ENT.Spawnable = true
 ENT.AdminOnly = false
 
 if SERVER then
