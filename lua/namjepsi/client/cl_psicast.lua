@@ -18,7 +18,7 @@ local function psicast_cycle(slot)
     elseif namjepsi.current_slot > 3 then
     namjepsi.current_slot = 1
     end
-    local currentPSI = LocalPlayer():GetNWString("namjepsi_slot_" .. namjepsi.current_slot)
+    local currentPSI = LocalPlayer():GetNW2String("namjepsi_slot_" .. namjepsi.current_slot)
     if currentPSI == "none" then
         psicast_cycle(slot)
     end
@@ -43,6 +43,10 @@ local function psicast_release()
 
     --singleplayer time slowdown
     send_slow(false)
+
+    net.Start("namjepsi_cast")
+    net.WriteDouble(namjepsi.current_slot)
+    net.SendToServer()
 end
 
 local function psicast_cancel()

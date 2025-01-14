@@ -16,7 +16,9 @@ namjepsi.abilities["test"] = {
 		return 40
 	end,
 
-	effect = function(ply, pos, target)
+	effect = function(ply, ...)
+		local args = ...
+		local pos = Vector(args[1], args[2], args[3])
 		if CLIENT then
 			print("test effect client")
 		end

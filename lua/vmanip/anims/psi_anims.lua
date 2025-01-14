@@ -9,7 +9,7 @@ VManip:RegisterAnim("cast",
 ["lerp_curve"]=3,
 ["speed"]=.6,
 ["startcycle"]=0,
-["holdtime"]=0.45,
+["holdtime"]=0.46,
 ["sounds"]={},
 ["loop"]=false
 }

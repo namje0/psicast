@@ -7,7 +7,7 @@ namjepsi.abilities["template"] = {
 
 	adminOnly = false, --only affects the spawnable ability entity, which means players can use the ability if that was spawned for them
 	castType = "instant", --either "instant" or "channel". instant abilities are casted immediately upon release, while channel abilities persist until +psicast is pressed again or energy runs out
-	targeting = "area", --either "area" or "target". area dictates a position the player is aiming at within the range, while target abilities affect a single target which can be any entity, including the caster
+	targeting = "area", --either "area" or a table of entities. area dictates a position the player is aiming at within the range, while target abilities affect a single target which can be any entity, including the caster if "player" is included in the table
 	selfOnly = false, --whether the ability can only target the player casting it, only relevant if targeting is set to "target"
 	range = 800, --maximum range the player can cast the ability
 	radius = 120,
