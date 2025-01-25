@@ -5,7 +5,7 @@ ENT.Base                     = "base_anim"
 ENT.RenderGroup              = RENDERGROUP_TRANSLUCENT
 ENT.PrintName                = "PSI Ability Base"
 ENT.Category                 = "PSIcast - Abilities"
-ENT.Spawnable		= true
+ENT.Spawnable		= false
 ENT.AdminOnly = false
 ENT.Icon = "vgui/stimlogo.png"
 
@@ -32,9 +32,13 @@ if SERVER then
     end
 
     function ENT:Use(activator, caller)
-        --TODO: Add ability to player
         if (activator:IsPlayer()) then
-            activator:GiveAmmo(1, "namje_psychostim")
+            if namjepsi.has_psi(activator, self.Ability) then
+                activator:PrintMessage(HUD_PRINTTALK, "You already have this ability!")
+                return true
+            end
+            namjepsi.give_psi(activator, self.Ability, false)
+            activator:PrintMessage(HUD_PRINTTALK, namjepsi.abilities[self.Ability]["name"] .. " unlocked")
             self:Remove()
         end
     end

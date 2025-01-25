@@ -16,6 +16,10 @@ namjepsi.abilities["test"] = {
 		return 40
 	end,
 
+	areaTargeting = function()
+		return nil
+	end,
+
 	effect = function(ply, ...)
 		local args = ...
 		local pos = Vector(args[1], args[2], args[3])

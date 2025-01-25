@@ -25,5 +25,4 @@ function namjepsi.cast(len, ply)
 
     ability.effect(ply, pos)
 end
-
 net.Receive("namjepsi_cast", namjepsi.cast)

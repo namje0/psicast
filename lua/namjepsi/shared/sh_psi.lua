@@ -1,4 +1,6 @@
-function namjepsi.give_psi(ply, psi)
+AddCSLuaFile()
+
+function namjepsi.give_psi(ply, psi, initial)
     if !IsValid(ply) then return end
     if !namjepsi.abilities[psi] then print(psi .. " is not a valid ability!") return end
 
@@ -8,7 +10,17 @@ function namjepsi.give_psi(ply, psi)
 
     ply.namjepsi_inv[psi] = true
 
+    if !initial then
+        namjepsi.update_inventory(ply)
+    end
+
     print(ply:Name() .. " was given " .. namjepsi.abilities[psi]["name"])
+end
+
+function namjepsi.has_psi(ply, psi)
+    if !IsValid(ply) then return end
+    if ply.namjepsi_inv[psi] then return true end
+    return false
 end
 
 function namjepsi.update_inventory(ply)
@@ -24,26 +36,33 @@ function namjepsi.update_inventory(ply)
     net.Send(ply)
 end
 
-local function ply_init(ply, transition)
+local function ply_spawn(ply, transition)
     if transition then return end
 
     ply:SetNW2Bool("namjepsi_awakened", true)
     ply:SetNW2Int("namjepsi_max_energy", 100)
     ply:SetNW2Int("namjepsi_energy",ply:GetNW2Int("namjepsi_max_energy"))
 
-    ply:SetNW2String("namjepsi_slot_1", "test")
+    --[[ply:SetNW2String("namjepsi_slot_1", "test")
     ply:SetNW2String("namjepsi_slot_2", "test2")
-    ply:SetNW2String("namjepsi_slot_3", "none")
+    ply:SetNW2String("namjepsi_slot_3", "none")]]
 
-    --TODO: if lose on death enabled/disabled
+    local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
+
+    --TODO: lose inventory on death convar
     ply.namjepsi_inv = {}
+    ply.namjepsi_slots = {}
+    for i = 1, slot_count do
+        ply.namjepsi_slots[i] = "none"
+    end
+
     --TODO: give all psi on spawn option
-    if SERVER then
+    --[[if SERVER then
         for i,_ in pairs(namjepsi.abilities) do
-            namjepsi.give_psi(ply, i)
+            namjepsi.give_psi(ply, i, true)
         end
         namjepsi.give_psi(ply, "deeznuts")
         namjepsi.update_inventory(ply)
-    end
+    end]]
 end
-hook.Add("PlayerSpawn", "namjepsi_ply_init", ply_init)
+hook.Add("PlayerSpawn", "namjepsi_ply_spawn", ply_spawn)
