@@ -10,3 +10,13 @@ net.Receive("namjepsi_update_inventory", function()
     end
     PrintTable(LocalPlayer().namjepsi_inv)
 end)
+
+net.Receive("namjepsi_update_slots", function()
+    if !IsValid(LocalPlayer()) then return end
+    LocalPlayer().namjepsi_slots = {}
+
+    local count = net.ReadUInt(32)
+    for i = 1, count do
+        LocalPlayer().namjepsi_inv[count] = "none"
+    end
+end)
