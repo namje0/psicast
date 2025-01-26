@@ -5,6 +5,8 @@ CreateConVar( "namjepsi_spawn_with_all_abilities", "1", FCVAR_ARCHIVE, "Spawns t
 
 local function namjepsi_menu_settings( panel )
     panel:NumSlider( "Ability Slots", "namjepsi_slot_amount", 1, 10, 0)
+    panel:CheckBox( "Save Inventory on Death", "namjepsi_save_inv_on_death" )
+    panel:CheckBox( "Spawn with all Abilities", "namjepsi_spawn_with_all_abilities" )
 end
 
 local function namjepsi_menu()

@@ -38,18 +38,16 @@ end
 
 local function ply_spawn(ply, transition)
     if transition then return end
-    if !ply.init then
-        ply.init = true
-    end
 
+    --TODO: convars for max_energy and awakening
     ply:SetNW2Bool("namjepsi_awakened", true)
     ply:SetNW2Int("namjepsi_max_energy", 100)
     ply:SetNW2Int("namjepsi_energy",ply:GetNW2Int("namjepsi_max_energy"))
 
     local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
 
-    if !ply.init and !GetConVar("namjepsi_save_inv_on_death"):GetBool() then
-        print("wipe inv for " .. ply.Name)
+    if !GetConVar("namjepsi_save_inv_on_death"):GetBool() and ply.init or !ply.init then
+        print("wipe inv for " .. ply:Name())
 
         ply.namjepsi_inv = {}
         ply.namjepsi_slots = {}
@@ -59,7 +57,7 @@ local function ply_spawn(ply, transition)
         if !GetConVar("namjepsi_spawn_with_all_abilities"):GetBool() then namjepsi.update_inventory(ply) end
 
         net.Start("namjepsi_update_slots")
-        net.WriteUInt(table.Count(ply.namjepsi_inv),32)
+        net.WriteUInt(slot_count,32)
         net.Send(ply)
     end
 
@@ -69,6 +67,10 @@ local function ply_spawn(ply, transition)
         end
         namjepsi.give_psi(ply, "deeznuts")
         namjepsi.update_inventory(ply)
+    end
+
+    if !ply.init then
+        ply.init = true
     end
 end
 hook.Add("PlayerSpawn", "namjepsi_ply_spawn", ply_spawn)

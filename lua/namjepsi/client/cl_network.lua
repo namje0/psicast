@@ -8,6 +8,7 @@ net.Receive("namjepsi_update_inventory", function()
         local ability = net.ReadString()
         LocalPlayer().namjepsi_inv[ability] = true
     end
+    print("updated inventory:")
     PrintTable(LocalPlayer().namjepsi_inv)
 end)
 
@@ -17,6 +18,8 @@ net.Receive("namjepsi_update_slots", function()
 
     local count = net.ReadUInt(32)
     for i = 1, count do
-        LocalPlayer().namjepsi_inv[count] = "none"
+        LocalPlayer().namjepsi_slots[i] = "none"
     end
+    print("updated slots:")
+    PrintTable(LocalPlayer().namjepsi_slots)
 end)
