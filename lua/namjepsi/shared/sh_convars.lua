@@ -1,10 +1,10 @@
-CreateConVar( "namjepsi_enable", "1", FCVAR_ARCHIVE, "Enable casting and psi menu" )
-CreateConVar( "namjepsi_slot_amount", "3", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Amount of active ability slots" )
-CreateConVar( "namjepsi_save_inv_on_death", "1", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Saves a player's ability inventory/slots on death" )
-CreateConVar( "namjepsi_spawn_with_all_abilities", "1", FCVAR_ARCHIVE, "Spawns the player with all abilities available" )
+CreateConVar( "namjepsi_enable", "1", FCVAR_ARCHIVE, "Enable casting and psi menu", 0, 1 )
+CreateConVar( "namjepsi_slot_amount", "3", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Amount of active ability slots", 1, 8 )
+CreateConVar( "namjepsi_save_inv_on_death", "1", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Saves a player's ability inventory/slots on death", 0, 1 )
+CreateConVar( "namjepsi_spawn_with_all_abilities", "1", FCVAR_ARCHIVE, "Spawns the player with all abilities available", 0, 1 )
 
 local function namjepsi_menu_settings( panel )
-    panel:NumSlider( "Ability Slots", "namjepsi_slot_amount", 1, 10, 0)
+    panel:NumSlider( "Ability Slots", "namjepsi_slot_amount", 1, 8, 0)
     panel:CheckBox( "Save Inventory on Death", "namjepsi_save_inv_on_death" )
     panel:CheckBox( "Spawn with all Abilities", "namjepsi_spawn_with_all_abilities" )
 end

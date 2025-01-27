@@ -11,14 +11,15 @@ local function send_slow(time)
 end
 
 local function psicast_cycle(slot)
+    local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
     if namjepsi.selfTarget then namjepsi.selfTarget = false end
     namjepsi.current_slot = namjepsi.current_slot + slot
     if namjepsi.current_slot < 1 then
-    namjepsi.current_slot = 3
-    elseif namjepsi.current_slot > 3 then
+    namjepsi.current_slot = slot_count
+    elseif namjepsi.current_slot > slot_count then
     namjepsi.current_slot = 1
     end
-    local currentPSI = LocalPlayer():GetNW2String("namjepsi_slot_" .. namjepsi.current_slot)
+    --local currentPSI = LocalPlayer():GetNW2String("namjepsi_slot_" .. namjepsi.current_slot)
     if currentPSI == "none" then
         psicast_cycle(slot)
     end
