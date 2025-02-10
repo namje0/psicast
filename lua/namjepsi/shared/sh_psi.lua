@@ -42,7 +42,7 @@ local function ply_spawn(ply, transition)
     --TODO: convars for max_energy and awakening
     ply:SetNW2Bool("namjepsi_awakened", true)
     ply:SetNW2Int("namjepsi_max_energy", 100)
-    ply:SetNW2Int("namjepsi_energy",ply:GetNW2Int("namjepsi_max_energy"))
+    ply:SetNW2Float("namjepsi_energy",ply:GetNW2Int("namjepsi_max_energy"))
 
     local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
 

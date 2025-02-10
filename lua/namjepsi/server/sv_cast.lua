@@ -24,6 +24,9 @@ function namjepsi.cast(len, ply)
 	end
 
 	ability.effect(ply, pos)
+
+	local cost = ability.cost()
+	ply:SetNW2Int("namjepsi_energy", math.Clamp(ply:GetNW2Int("namjepsi_energy") - cost, 0, ply:GetNW2Int("namjepsi_max_energy")))
 end
 net.Receive("namjepsi_cast", namjepsi.cast)
 
