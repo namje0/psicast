@@ -6,13 +6,14 @@ net.Receive("namjepsi_update_inventory", function()
 
     for i = 1, count do
         local ability = net.ReadString()
+        print("give ability on client: " .. ability)
         LocalPlayer().namjepsi_inv[ability] = true
     end
     print("updated inventory:")
     PrintTable(LocalPlayer().namjepsi_inv)
 end)
 
-net.Receive("namjepsi_update_slots", function()
+net.Receive("namjepsi_init_slots", function()
     if !IsValid(LocalPlayer()) then return end
     LocalPlayer().namjepsi_slots = {}
 

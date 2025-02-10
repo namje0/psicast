@@ -56,7 +56,7 @@ local function ply_spawn(ply, transition)
         end
         if !GetConVar("namjepsi_spawn_with_all_abilities"):GetBool() then namjepsi.update_inventory(ply) end
 
-        net.Start("namjepsi_update_slots")
+        net.Start("namjepsi_init_slots")
         net.WriteUInt(slot_count,32)
         net.Send(ply)
     end

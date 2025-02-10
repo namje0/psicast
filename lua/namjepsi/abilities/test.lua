@@ -31,7 +31,8 @@ namjepsi.abilities["test"] = {
 			local effect_data = EffectData()
 			effect_data:SetOrigin( pos )
 			effect_data:SetNormal(pos )
-			util.Effect( "cball_explode", effect_data )
+			util.Effect( "Explosion", effect_data )
+			util.BlastDamage( ply, ply, pos, 100, 100 )
 		end
 	end
 }
