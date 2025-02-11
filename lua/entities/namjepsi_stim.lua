@@ -10,7 +10,7 @@ ENT.AdminOnly = false
 
 if SERVER then
     function ENT:Initialize()
-        self:SetModel("models/namje/psychostim.mdl")
+        self:SetModel("models/danga1w1/psychostim.mdl")
 
         self:PhysicsInit(SOLID_VPHYSICS)
         self:SetMoveType(MOVETYPE_VPHYSICS)

@@ -60,7 +60,7 @@ local function psicast_cancel()
 end
 
 local function psicast_disable_keys(_, cmd)
-    if (namjepsi.casting) then
+    if (namjepsi.casting or namjepsi.stimming) then
         cmd:RemoveKey(8192) --reload
         cmd:RemoveKey(1) --attack
         cmd:RemoveKey(2048) --alt attack
