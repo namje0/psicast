@@ -1,6 +1,8 @@
 {
-    "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true,
     "glualint.linter": "glualint",
-    "glualint.run": "onType"
+    "glualint.run": "onType",
+    "[glua]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    }
 }

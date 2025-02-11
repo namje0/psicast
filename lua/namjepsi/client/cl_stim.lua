@@ -3,12 +3,12 @@ namjepsi.stimming = false
 local function namjepsi_stim()
     if namjepsi.stimming or namjepsi.casting then return end
     local ply = LocalPlayer()
-    local stim_count = LocalPlayer():GetAmmoCount( "namje_psychostim" )
+    local stim_count = ply:GetAmmoCount( "namje_psychostim" )
     local energy = ply:GetNW2Float("namjepsi_energy")
     local max_energy = ply:GetNW2Int("namjepsi_max_energy")
 
     if stim_count <= 0 or energy >= max_energy then
-        LocalPlayer():EmitSound( "player/suit_denydevice.wav")
+        ply:EmitSound( "player/suit_denydevice.wav")
     return end
 
     local vmanip_anim = VManip:GetCurrentAnim()
@@ -23,8 +23,8 @@ local function namjepsi_stim()
     VManip:PlayAnim("useinhaler")
 
     timer.Simple(.3,function()
-        LocalPlayer():EmitSound("inhale.wav")
-        LocalPlayer():ScreenFade( SCREENFADE.IN, Color( 50, 100, 255, 50 ), .6, 0 )
+        ply:EmitSound("inhale.wav")
+        ply:ScreenFade( SCREENFADE.IN, Color( 50, 100, 255, 50 ), .6, 0 )
         net.Start("namjepsi_stim")
         net.SendToServer()
     end)

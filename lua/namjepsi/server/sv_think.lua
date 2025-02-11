@@ -4,17 +4,21 @@ local function ply_think(ply)
 
 	if ply:GetNW2Bool("namjepsi_awakened") then
 		--TODO: convars for energy regen
-		local recharge_rate = FrameTime() * .5
+		local approach_rate = FrameTime() * .5
 
 		player_energy = ply:GetNW2Float("namjepsi_energy")
 		player_max_energy = ply:GetNW2Int("namjepsi_max_energy")
 
 		--TODO: if convar for passive regen and sitting regen
 		if ply:InVehicle() then
-			recharge_rate = recharge_rate * 50
+			approach_rate = approach_rate * 50
 		end
 
-		player_energy = math.Approach(player_energy, player_max_energy, recharge_rate)
+		if player_energy > player_max_energy then
+			approach_rate = FrameTime() * 5
+		end
+
+		player_energy = math.Approach(player_energy, player_max_energy, approach_rate)
 
 		ply:SetNW2Float("namjepsi_energy", player_energy)
 	end

@@ -22,13 +22,13 @@ local function namjepsi_hud()
     local psi_bar_bg_color = Color(78, 75, 66, bar_alpha)
     local psi_bar_color = Color(230, 221, 175, bar_alpha)
     local psi_trail_color = Color(153, 144, 120, bar_alpha)
-    local psi_over_color = Color(255, 0, 255, bar_alpha)
+    local psi_over_color = Color(186, 120, 174, bar_alpha)
 
     --energy bar
-    if energy < max_energy then
-        bar_alpha = math.Approach(bar_alpha, 255, 255 * FrameTime() * 2)
-    else
+    if energy == max_energy then
         bar_alpha = math.Approach(bar_alpha, 0, 255 * FrameTime() * .7)
+    else
+        bar_alpha = math.Approach(bar_alpha, 255, 255 * FrameTime() * 2)
     end
 
     bar_length = psi_bar.w * math.Clamp(energy / max_energy, 0, 1)
