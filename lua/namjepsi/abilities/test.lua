@@ -3,7 +3,7 @@ namjepsi.abilities["test"] = {
 	name = "Test Ability",
 	desc = "Test test test, test",
 	theme = Color(21,255,186,255),
-	icon = "vgui/stimlogo.png",
+	icon = "vgui/noability.png",
 
 	adminOnly = false,
 	castType = "instant",

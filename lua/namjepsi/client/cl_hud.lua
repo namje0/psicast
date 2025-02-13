@@ -1,7 +1,4 @@
-local cd_alpha = 255
-local stim_alpha = 255
-local dose_alpha = 255
-local bar_alpha = 255
+local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha = 0, 0, 0, 0, 0
 
 local psi_bar = {
     x = ScreenScale(14),
@@ -67,7 +64,7 @@ local function namjepsi_hud()
     --draw.SimpleText(math.floor(energy) .. "%", "GModToolHelp", ScreenScale(13), ScrH() - ScreenScale(45.2), psi_bar_bg_color, TEXT_ALIGN_BOTTOM, TEXT_ALIGN_RIGHT)
 
     --stim count
-    surface.SetDrawColor(Color(255,255,255, stim_alpha)) -- Set the drawing color
+    surface.SetDrawColor(Color(255,255,255, stim_alpha))
     surface.SetMaterial(Material("vgui/stimlogo.png"))
     surface.DrawTexturedRect( ScreenScale(11), ScrH() - ScreenScale(63), ScreenScale(12), ScreenScale(12) )
     draw.SimpleText(stim_amount > 99 and "99+" or stim_amount, "GModToolSubtitle", ScreenScale(22), ScrH() - ScreenScale(62), Color(255, 255, 255, stim_alpha), TEXT_ALIGN_BOTTOM, TEXT_ALIGN_RIGHT)
@@ -79,3 +76,45 @@ local function namjepsi_hud()
     end
 end
 hook.Add("HUDPaint", "namjepsi_hud", namjepsi_hud)
+
+local function namjepsi_hand_ui(hands)
+    local bone = hands:LookupBone("ValveBiped.Bip01_L_Hand") or hands:LookupBone("L Hand")
+    if bone == nil then return end
+    local hand = hands:GetBoneMatrix(bone)
+
+    if hand then
+        if namjepsi.casting then
+            cast_alpha = math.Approach(cast_alpha, 255, 255 * FrameTime() / .5)
+        else
+            cast_alpha = math.Approach(cast_alpha, 0, 255 * FrameTime() / .5)
+        end
+
+        local ability
+        if namjepsi.current_slot then
+            ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+        end
+
+        local pos, ang = ((hand:GetTranslation() + hand:GetAngles():Forward() * 2.8)  + hand:GetAngles():Right() * 2.1) + hand:GetAngles():Up() * 2.5, hand:GetAngles()
+        ang:RotateAroundAxis(hand:GetAngles():Forward(),90)
+        ang:RotateAroundAxis(hand:GetAngles():Right(), -28)
+
+        cam.Start3D2D(pos, ang, 0.1)
+        --draw.SimpleText("Energy: " .. math.floor(energy) .. "%", "GModToolHelp", 0, 0, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        --draw.SimpleText("Stim: " .. (stim_amount > 99 and "99+" or stim_amount), "GModToolHelp", 0, 20, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        surface.SetDrawColor(Color(78, 75, 66, math.Clamp(cast_alpha, 0, 155)))
+        surface.DrawRect(0, 0, 30, 30)
+
+        surface.SetDrawColor(ability and Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha) or Color(150,150,150, cast_alpha))
+        surface.SetMaterial(Material("vgui/gradient.png"))
+        surface.DrawTexturedRect( 0, 0, 30, 30 )
+
+        surface.SetDrawColor(Color(255, 255 ,255, cast_alpha))
+        surface.SetMaterial(ability and Material(ability.icon) or Material("vgui/noability.png"))
+        surface.DrawTexturedRect( 0, 0, 30, 30 )
+
+        cam.End3D2D()
+    end
+end
+hook.Add("PostDrawPlayerHands", "namjepsi_hand_ui", function()
+    namjepsi_hand_ui(LocalPlayer():GetHands())
+end)

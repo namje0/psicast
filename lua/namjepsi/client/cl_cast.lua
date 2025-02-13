@@ -37,6 +37,15 @@ local function psicast_start()
     send_slow(true)
 end
 
+local function psicast_cancel()
+    LocalPlayer():EmitSound( "player/suit_denydevice.wav")
+    namjepsi.casting = false
+    namjepsi.selfTarget = false
+    VManip:Remove()
+    --singleplayer time slowdown
+    send_slow(false)
+end
+
 local function psicast_release()
     if !namjepsi.casting then return end
     VManip:QuitHolding("cast")
@@ -47,19 +56,14 @@ local function psicast_release()
 
     local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
 
+    print(ability)
+    if !ability then
+        psicast_cancel()
+    return end
     net.Start("namjepsi_cast")
     net.WriteDouble(namjepsi.current_slot)
     net.SendToServer()
     LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot] = CurTime() + ability.cooldown
-end
-
-local function psicast_cancel()
-    LocalPlayer():EmitSound( "player/suit_denydevice.wav")
-    namjepsi.casting = false
-    namjepsi.selfTarget = false
-    VManip:Remove()
-    --singleplayer time slowdown
-    send_slow(false)
 end
 
 local function psicast_disable_keys(_, cmd)
