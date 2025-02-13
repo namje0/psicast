@@ -7,7 +7,7 @@ function namjepsi.stim(len, ply)
 
 	if stim_count <= 0 or energy >= max_energy then return end
 
-	ply:SetNW2Int("namjepsi_energy", math.Clamp(energy + max_energy * .4, 0, max_energy * 2))
+	ply:SetNW2Int("namjepsi_energy", math.Clamp(energy + max_energy * .4, 0, GetConVar("namjepsi_overcharge"):GetBool() and max_energy * 2 or max_energy))
 	ply:RemoveAmmo(1, "namje_psychostim")
 end
 net.Receive("namjepsi_stim", namjepsi.stim)

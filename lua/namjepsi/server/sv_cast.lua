@@ -26,7 +26,10 @@ function namjepsi.cast(len, ply)
 	ability.effect(ply, pos)
 
 	local cost = ability.cost()
-	ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, ply:GetNW2Int("namjepsi_max_energy") * 2))
+	ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))
+
+	--CD
+	ply.namjepsi_cooldowns[slot] = CurTime() + ability.cooldown
 end
 net.Receive("namjepsi_cast", namjepsi.cast)
 

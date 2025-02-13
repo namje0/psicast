@@ -45,9 +45,12 @@ local function psicast_release()
     --singleplayer time slowdown
     send_slow(false)
 
+    local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+
     net.Start("namjepsi_cast")
     net.WriteDouble(namjepsi.current_slot)
     net.SendToServer()
+    LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot] = CurTime() + ability.cooldown
 end
 
 local function psicast_cancel()

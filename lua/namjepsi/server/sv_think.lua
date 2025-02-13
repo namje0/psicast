@@ -3,24 +3,39 @@ local function ply_think(ply)
 	if !ply:Alive() then return end
 
 	if ply:GetNW2Bool("namjepsi_awakened") then
-		--TODO: convars for energy regen
-		local approach_rate = FrameTime() * .5
+		--cooldown
+		local cooldowns = ply.namjepsi_cooldowns
+		if cooldowns then
+			for slot, time in pairs(cooldowns) do
+				if time < CurTime() then
+					print("cooldown complete for " .. slot)
+					cooldowns[slot] = nil
+				end
+			end
+		end
+		--energy regen/decay
+		local approach_rate = 0
+		if ply:InVehicle() and GetConVar("namjepsi_sitting_regen"):GetBool() then
+			approach_rate = GetConVar("namjepsi_sitting_rate"):GetFloat()
+		elseif GetConVar("namjepsi_passive_regen"):GetBool() then
+			approach_rate = GetConVar("namjepsi_passive_rate"):GetFloat()
+		end
 
 		player_energy = ply:GetNW2Float("namjepsi_energy")
 		player_max_energy = ply:GetNW2Int("namjepsi_max_energy")
 
-		--TODO: if convar for passive regen and sitting regen
-		if ply:InVehicle() then
-			approach_rate = approach_rate * 50
-		end
-
 		if player_energy > player_max_energy then
-			approach_rate = FrameTime() * 5
+			if GetConVar("namjepsi_overcharge"):GetBool() then
+				approach_rate = GetConVar("namjepsi_decay_rate"):GetFloat()
+			else
+				player_energy = player_max_energy
+			end
 		end
 
-		player_energy = math.Approach(player_energy, player_max_energy, approach_rate)
-
-		ply:SetNW2Float("namjepsi_energy", player_energy)
+		if approach_rate > 0 then
+			player_energy = math.Approach(player_energy, player_max_energy, FrameTime() * approach_rate)
+			ply:SetNW2Float("namjepsi_energy", player_energy)
+		end
 	end
 end
 hook.Add("PlayerPostThink", "namjepsi_ply_think", ply_think)

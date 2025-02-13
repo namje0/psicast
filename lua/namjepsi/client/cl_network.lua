@@ -15,6 +15,8 @@ end)
 
 net.Receive("namjepsi_init_slots", function()
     if !IsValid(LocalPlayer()) then return end
+    --also init slot cooldowns here
+    LocalPlayer().namjepsi_cooldowns = {}
     LocalPlayer().namjepsi_slots = {}
 
     local count = net.ReadUInt(32)

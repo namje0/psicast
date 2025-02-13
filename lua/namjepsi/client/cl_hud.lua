@@ -15,9 +15,21 @@ local trail_length = psi_bar.w
 
 local function namjepsi_hud()
     local ply = LocalPlayer()
+    if !ply:GetNW2Bool("namjepsi_awakened") then return end
+
     local stim_amount = ply:GetAmmoCount( "namje_psychostim" )
     local energy = ply:GetNW2Float("namjepsi_energy")
     local max_energy = ply:GetNW2Int("namjepsi_max_energy")
+
+    local cooldowns = ply.namjepsi_cooldowns
+    if cooldowns then
+        for slot, time in pairs(cooldowns) do
+            if time < CurTime() then
+                print("cooldown complete for " .. slot)
+                cooldowns[slot] = nil
+            end
+        end
+    end
 
     local psi_bar_bg_color = Color(78, 75, 66, bar_alpha)
     local psi_bar_color = Color(230, 221, 175, bar_alpha)

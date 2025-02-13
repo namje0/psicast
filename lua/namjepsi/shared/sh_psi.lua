@@ -41,7 +41,7 @@ local function ply_spawn(ply, transition)
 
     --TODO: convars for max_energy and awakening
     ply:SetNW2Bool("namjepsi_awakened", true)
-    ply:SetNW2Int("namjepsi_max_energy", 100)
+    ply:SetNW2Int("namjepsi_max_energy", GetConVar("namjepsi_max_energy"):GetInt())
     ply:SetNW2Float("namjepsi_energy",ply:GetNW2Int("namjepsi_max_energy"))
 
     local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
@@ -51,22 +51,26 @@ local function ply_spawn(ply, transition)
 
         ply.namjepsi_inv = {}
         ply.namjepsi_slots = {}
+        ply.namjepsi_cooldowns = {}
         for i = 1, slot_count do
             ply.namjepsi_slots[i] = "none"
         end
-        if !GetConVar("namjepsi_spawn_with_all_abilities"):GetBool() then namjepsi.update_inventory(ply) end
-
-        net.Start("namjepsi_init_slots")
-        net.WriteUInt(slot_count,32)
-        net.Send(ply)
+        --delay for multiplayer initial spawn
+        timer.Simple(.5, function()
+            if !GetConVar("namjepsi_spawn_with_all_abilities"):GetBool() then namjepsi.update_inventory(ply) end
+            net.Start("namjepsi_init_slots")
+            net.WriteUInt(slot_count,32)
+            net.Send(ply)
+        end)
     end
 
     if GetConVar("namjepsi_spawn_with_all_abilities"):GetBool() then
         for i,_ in pairs(namjepsi.abilities) do
             namjepsi.give_psi(ply, i, true)
         end
-        namjepsi.give_psi(ply, "deeznuts")
-        namjepsi.update_inventory(ply)
+        timer.Simple(.5, function()
+            namjepsi.update_inventory(ply)
+        end)
     end
 
     if !ply.init then
