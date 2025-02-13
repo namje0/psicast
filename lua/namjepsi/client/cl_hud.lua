@@ -7,6 +7,42 @@ local psi_bar = {
     h = ScreenScale(5)
 }
 
+surface.CreateFont( "namjepsi_ui", {
+    font = "Noto Sans",
+    extended = false,
+    size = 60,
+    weight = 700,
+    blursize = 0,
+    scanlines = 0,
+    antialias = true,
+    underline = false,
+    italic = false,
+    strikeout = false,
+    symbol = false,
+    rotary = false,
+    shadow = false,
+    additive = false,
+    outline = false,
+} )
+
+surface.CreateFont( "namjepsi_bold", {
+    font = "Noto Sans SemiBold",
+    extended = false,
+    size = 52,
+    weight = 800,
+    blursize = 0,
+    scanlines = 0,
+    antialias = true,
+    underline = false,
+    italic = false,
+    strikeout = false,
+    symbol = false,
+    rotary = false,
+    shadow = false,
+    additive = false,
+    outline = false,
+} )
+
 local bar_length = psi_bar.w
 local trail_length = psi_bar.w
 
@@ -89,28 +125,58 @@ local function namjepsi_hand_ui(hands)
             cast_alpha = math.Approach(cast_alpha, 0, 255 * FrameTime() / .5)
         end
 
-        local ability
+        local ability, cooldown
         if namjepsi.current_slot then
+            cooldown = LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot]
             ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
         end
 
-        local pos, ang = ((hand:GetTranslation() + hand:GetAngles():Forward() * 2.8)  + hand:GetAngles():Right() * 2.1) + hand:GetAngles():Up() * 2.5, hand:GetAngles()
+        local pos, ang = ((hand:GetTranslation() + hand:GetAngles():Forward() * 3.2)  + hand:GetAngles():Right() * 2) + hand:GetAngles():Up() * 2.5, hand:GetAngles()
         ang:RotateAroundAxis(hand:GetAngles():Forward(),90)
         ang:RotateAroundAxis(hand:GetAngles():Right(), -28)
 
-        cam.Start3D2D(pos, ang, 0.1)
+        cam.Start3D2D(pos, ang, 0.01)
         --draw.SimpleText("Energy: " .. math.floor(energy) .. "%", "GModToolHelp", 0, 0, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         --draw.SimpleText("Stim: " .. (stim_amount > 99 and "99+" or stim_amount), "GModToolHelp", 0, 20, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         surface.SetDrawColor(Color(78, 75, 66, math.Clamp(cast_alpha, 0, 155)))
-        surface.DrawRect(0, 0, 30, 30)
+        surface.DrawRect(0, 0, 300, 300)
 
         surface.SetDrawColor(ability and Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha) or Color(150,150,150, cast_alpha))
         surface.SetMaterial(Material("vgui/gradient.png"))
-        surface.DrawTexturedRect( 0, 0, 30, 30 )
+        surface.DrawTexturedRect( 0, 0, 300, 300 )
 
         surface.SetDrawColor(Color(255, 255 ,255, cast_alpha))
         surface.SetMaterial(ability and Material(ability.icon) or Material("vgui/noability.png"))
-        surface.DrawTexturedRect( 0, 0, 30, 30 )
+        surface.DrawTexturedRect( 0, 0, 300, 300 )
+
+        --active cooldown
+        if cooldown and ability then
+            local time_remaining = math.max(0, cooldown - CurTime())
+            local height = 300 * math.Clamp(time_remaining / ability.cooldown, 0, 1)
+            surface.SetDrawColor(Color(206, 324, 74, math.Clamp(cast_alpha, 0, 200)))
+            surface.DrawRect(0, 301 - height, 300, height, 0, 1)
+        end
+
+        --cost
+        local can_cast = ability and LocalPlayer():GetNW2Float("namjepsi_energy") >= ability.cost()
+        surface.SetDrawColor(can_cast and Color(206, 324, 74, cast_alpha) or Color(78, 75, 50, cast_alpha))
+        surface.DrawRect(320, 0, 130, 50)
+
+        surface.SetDrawColor(can_cast and Color(255, 255 ,255, cast_alpha) or Color(206, 324, 74, cast_alpha))
+        surface.SetMaterial(Material("vgui/energy.png"))
+        surface.DrawTexturedRect( 320, 0, 50, 50 )
+
+        draw.SimpleText(ability and ability.cost() or "--", "namjepsi_bold", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+
+        --cooldown
+        surface.SetDrawColor(Color(78, 75, 50, cast_alpha))
+        surface.DrawRect(320, 70, 150, 50)
+
+        surface.SetDrawColor(Color(180, 180, 180, cast_alpha))
+        surface.SetMaterial(Material("vgui/cooldown.png"))
+        surface.DrawTexturedRect( 320, 70, 50, 50 )
+
+        draw.SimpleText(ability and ability.cooldown .. "s" or "--", "namjepsi_bold", 465, 122, Color(255, 255, 255, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         cam.End3D2D()
     end

@@ -2,18 +2,18 @@ namjepsi.abilities["test"] = {
 	intName = "test",
 	name = "Test Ability",
 	desc = "Test test test, test",
-	theme = Color(21,255,186,255),
-	icon = "vgui/noability.png",
+	theme = Color(255,154,21),
+	icon = "vgui/namjepsi_abilities/buckteeblast.png",
 
 	adminOnly = false,
 	castType = "instant",
 	targeting = "Area",
 	selfOnly = false,
-	range = 800,
+	range = 600,
 	radius = 120,
-	cooldown = 3,
+	cooldown = 4.5,
 	cost = function()
-		return 40
+		return 25
 	end,
 
 	areaTargeting = function()

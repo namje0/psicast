@@ -55,11 +55,21 @@ local function psicast_release()
     send_slow(false)
 
     local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
-
-    print(ability)
     if !ability then
         psicast_cancel()
-    return end
+        return
+    end
+
+    if LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot] then
+        psicast_cancel()
+        return
+    end
+
+    if LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() then
+        psicast_cancel()
+        return
+    end
+
     net.Start("namjepsi_cast")
     net.WriteDouble(namjepsi.current_slot)
     net.SendToServer()
