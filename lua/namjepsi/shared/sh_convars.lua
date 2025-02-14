@@ -15,6 +15,9 @@ CreateConVar( "namjepsi_passive_rate", .5, FCVAR_ARCHIVE, "The energy regen rate
 CreateConVar( "namjepsi_sitting_regen", 1, FCVAR_ARCHIVE, "Enables sitting energy regen", 0, 1 )
 CreateConVar( "namjepsi_sitting_rate", 5, FCVAR_ARCHIVE, "The energy regen rate for the sitting regen", .1, 10 )
 
+if game.SinglePlayer() then
+    CreateConVar( "namjepsi_cast_slow", 1, FCVAR_ARCHIVE + FCVAR_REPLICATED, "Enables slowing time while casting", 0, 1 )
+end
 
 local function divider(parent)
     local divider = vgui.Create("DPanel", parent)
@@ -31,6 +34,10 @@ local function namjepsi_main_settings(panel)
 
     panel:CheckBox( "Save Inventory on Death", "namjepsi_save_inv_on_death" )
     panel:CheckBox( "Spawn with all Abilities", "namjepsi_spawn_with_all_abilities" )
+
+    if game.SinglePlayer() then
+        panel:CheckBox( "Slow time while casting (Singleplayer only)", "namjepsi_cast_slow" )
+    end
 end
 
 local function namjepsi_energy_settings(panel)

@@ -10,6 +10,9 @@ local function ply_think(ply)
 				if time < CurTime() then
 					print("cooldown complete for " .. slot)
 					cooldowns[slot] = nil
+					net.Start("namjepsi_complete_cd")
+					net.WriteInt(slot, 8)
+					net.Send(ply)
 				end
 			end
 		end

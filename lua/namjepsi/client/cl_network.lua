@@ -26,3 +26,9 @@ net.Receive("namjepsi_init_slots", function()
     print("updated slots:")
     PrintTable(LocalPlayer().namjepsi_slots)
 end)
+
+net.Receive("namjepsi_complete_cd", function()
+    if !IsValid(LocalPlayer()) then return end
+    local slot = net.ReadInt(8)
+    LocalPlayer().namjepsi_cooldowns[slot] = nil
+end)

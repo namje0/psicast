@@ -54,7 +54,7 @@ local function namjepsi_hud()
     local energy = ply:GetNW2Float("namjepsi_energy")
     local max_energy = ply:GetNW2Int("namjepsi_max_energy")
 
-    local cooldowns = ply.namjepsi_cooldowns
+    --[[local cooldowns = ply.namjepsi_cooldowns
     if cooldowns then
         for slot, time in pairs(cooldowns) do
             if time < CurTime() then
@@ -62,7 +62,7 @@ local function namjepsi_hud()
                 cooldowns[slot] = nil
             end
         end
-    end
+    end]]
 
     local psi_bar_bg_color = Color(78, 75, 66, bar_alpha)
     local psi_bar_color = Color(230, 221, 175, bar_alpha)
@@ -118,16 +118,15 @@ local function namjepsi_hand_ui(hands)
     if bone == nil then return end
     local hand = hands:GetBoneMatrix(bone)
 
-    if hand then
-        if namjepsi.casting then
-            cast_alpha = math.Approach(cast_alpha, 255, 255 * FrameTime() / .5)
-        else
-            cast_alpha = math.Approach(cast_alpha, 0, 255 * FrameTime() / .5)
-        end
+    if hand and namjepsi.casting then
+        cast_alpha = math.Approach(cast_alpha, 255, 255 * FrameTime() / .75)
 
         local ability, cooldown
         if namjepsi.current_slot then
-            cooldown = LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot]
+            local cooldowns = LocalPlayer().namjepsi_cooldowns
+            if cooldowns then
+                cooldown = cooldowns[namjepsi.current_slot]
+            end
             ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
         end
 
@@ -179,8 +178,21 @@ local function namjepsi_hand_ui(hands)
         draw.SimpleText(ability and ability.cooldown .. "s" or "--", "namjepsi_bold", 465, 122, Color(255, 255, 255, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         cam.End3D2D()
+    else
+        cast_alpha = 0
     end
 end
 hook.Add("PostDrawPlayerHands", "namjepsi_hand_ui", function()
-    namjepsi_hand_ui(LocalPlayer():GetHands())
+    local wep = LocalPlayer():GetActiveWeapon()
+    if wep and wep.Base ~= "mg_base" then
+        namjepsi_hand_ui(LocalPlayer():GetHands())
+    end
+end)
+
+--mw base weps use custom arms
+hook.Add("PostDrawViewModel", "namjepsi_hand_ui_mwbase", function()
+    local wep = LocalPlayer():GetActiveWeapon()
+    if wep and wep.Base == "mg_base" then
+        namjepsi_hand_ui(LocalPlayer():GetHands())
+    end
 end)

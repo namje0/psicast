@@ -3,32 +3,50 @@ namjepsi.self_target = false
 namjepsi.current_slot = 1
 
 local function send_slow(time)
-    if game.SinglePlayer() then
+    if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
         net.Start("namje_slow_time")
         net.WriteBool(time)
         net.SendToServer()
     end
 end
 
-local function psicast_cycle(slot)
-    local slot_count = GetConVar("namjepsi_slot_amount"):GetInt()
-    if namjepsi.selfTarget then namjepsi.selfTarget = false end
-    namjepsi.current_slot = namjepsi.current_slot + slot
-    if namjepsi.current_slot < 1 then
-    namjepsi.current_slot = slot_count
-    elseif namjepsi.current_slot > slot_count then
-    namjepsi.current_slot = 1
+local function is_slots_empty()
+    for k, v in pairs(LocalPlayer().namjepsi_slots) do
+        if v != "none" then
+            return false
+        end
     end
-    --local currentPSI = LocalPlayer():GetNW2String("namjepsi_slot_" .. namjepsi.current_slot)
-    if currentPSI == "none" then
+    return true
+end
+
+local function psicast_cycle(slot)
+    --if is_slots_empty() then return end
+    local num_slots = LocalPlayer().namjepsi_slots
+    namjepsi.current_slot = namjepsi.current_slot + slot
+
+    if namjepsi.current_slot > #num_slots then
+        namjepsi.current_slot = 1
+    elseif namjepsi.current_slot < 1 then
+        namjepsi.current_slot = #num_slots
+    end
+
+    if LocalPlayer().namjepsi_slots[namjepsi.current_slot] == "none" then
         psicast_cycle(slot)
     end
-    print(namjepsi.current_slot)
 end
 
 local function psicast_start()
     if !IsValid(LocalPlayer()) or !LocalPlayer():Alive() then return end
     if namjepsi.casting then return end
+
+    if is_slots_empty() then
+        LocalPlayer():PrintMessage(HUD_PRINTTALK, "You have no abilities to cast. Add some in the inventory menu.")
+        return
+    end
+
+    if LocalPlayer().namjepsi_slots[namjepsi.current_slot] == "none" then
+        psicast_cycle(1)
+    end
 
     namjepsi.casting = true
     VManip:PlayAnim("cast")
@@ -87,17 +105,21 @@ end
 
 local function psicast_binds(ply, bind, pressed)
     if !IsValid(LocalPlayer()) or !LocalPlayer():Alive() then return end
+    if !pressed then return end
+
     if namjepsi.casting then
         --TODO: Target Self bind
         --impulse 100 = flashlight
         if (bind == "impulse 100") then
             psicast_cancel()
             return true
-        elseif (bind == "invprev") then
-            psicast_cycle(-1)
-            return true
         elseif (bind == "invnext") then
             psicast_cycle(1)
+            print("lol")
+            return true
+        elseif (bind == "invprev") then
+            psicast_cycle(-1)
+            print("lol")
             return true
         end
     end
