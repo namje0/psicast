@@ -27,12 +27,12 @@ namjepsi.abilities["test"] = {
 			print("test effect client")
 		end
 		if SERVER then
-			print("test effect server")
+			local ability = namjepsi.abilities["test"]
 			local effect_data = EffectData()
 			effect_data:SetOrigin( pos )
 			effect_data:SetNormal(pos )
 			util.Effect( "Explosion", effect_data )
-			util.BlastDamage( ply, ply, pos, 100, 100 )
+			util.BlastDamage( ply, ply, pos, ability.radius, 100 )
 		end
 	end
 }

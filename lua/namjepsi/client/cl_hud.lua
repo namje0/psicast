@@ -1,11 +1,12 @@
 local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha = 0, 0, 0, 0, 0
-
 local psi_bar = {
     x = ScreenScale(14),
     y = ScrH() - ScreenScale(45),
     w = ScreenScale(76.5),
     h = ScreenScale(5)
 }
+local bar_length = psi_bar.w
+local trail_length = psi_bar.w
 
 surface.CreateFont( "namjepsi_ui", {
     font = "Noto Sans",
@@ -43,9 +44,6 @@ surface.CreateFont( "namjepsi_bold", {
     outline = false,
 } )
 
-local bar_length = psi_bar.w
-local trail_length = psi_bar.w
-
 local function namjepsi_hud()
     local ply = LocalPlayer()
     if !ply:GetNW2Bool("namjepsi_awakened") then return end
@@ -53,16 +51,6 @@ local function namjepsi_hud()
     local stim_amount = ply:GetAmmoCount( "namje_psychostim" )
     local energy = ply:GetNW2Float("namjepsi_energy")
     local max_energy = ply:GetNW2Int("namjepsi_max_energy")
-
-    --[[local cooldowns = ply.namjepsi_cooldowns
-    if cooldowns then
-        for slot, time in pairs(cooldowns) do
-            if time < CurTime() then
-                print("cooldown complete for " .. slot)
-                cooldowns[slot] = nil
-            end
-        end
-    end]]
 
     local psi_bar_bg_color = Color(78, 75, 66, bar_alpha)
     local psi_bar_color = Color(230, 221, 175, bar_alpha)
@@ -119,7 +107,11 @@ local function namjepsi_hand_ui(hands)
     local hand = hands:GetBoneMatrix(bone)
 
     if hand and namjepsi.casting then
-        cast_alpha = math.Approach(cast_alpha, 255, 255 * FrameTime() / .75)
+        local alpha_factor = .75
+        if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
+            alpha_factor = .5
+        end
+        cast_alpha = math.Approach(cast_alpha, 255, 255 * FrameTime() / alpha_factor)
 
         local ability, cooldown
         if namjepsi.current_slot then
@@ -182,6 +174,38 @@ local function namjepsi_hand_ui(hands)
         cast_alpha = 0
     end
 end
+
+local function namjepsi_fx()
+    local ply = LocalPlayer()
+    if !IsValid(ply) and !ply:Alive() then return end
+    local cursor = Material( "particle/particle_glow_04" )
+    if namjepsi.casting then
+        local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
+        if !ability then return end
+        local trace = ply:GetEyeTrace()
+        local pos, target
+
+        local tr = util.TraceLine( {
+            start = ply:GetShootPos(),
+            endpos = ply:GetShootPos() + ply:GetAimVector() * ability.range,
+            filter = ply,
+            mask = MASK_SHOT
+        } )
+        pos = tr.HitPos
+
+        local shake = math.sin(RealTime() * 3)
+        cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+        render.StartWorldRings()
+        render.AddWorldRing(pos, ability.radius + shake, 4, 32)
+        render.FinishWorldRings(ability.theme)
+        render.SetMaterial(cursor)
+        cam.IgnoreZ(true)
+        render.DrawSprite(pos, 12 + shake, 12 + shake, color_white)
+        cam.IgnoreZ(false)
+        cam.End3D()
+    end
+end
+
 hook.Add("PostDrawPlayerHands", "namjepsi_hand_ui", function()
     local wep = LocalPlayer():GetActiveWeapon()
     if wep and wep.Base ~= "mg_base" then
@@ -196,3 +220,70 @@ hook.Add("PostDrawViewModel", "namjepsi_hand_ui_mwbase", function()
         namjepsi_hand_ui(LocalPlayer():GetHands())
     end
 end)
+
+hook.Add( "RenderScreenspaceEffects", "namjepsi_fx", namjepsi_fx )
+
+--stencil ring rendering source code from luabee gaming - https://www.youtube.com/watch?v=w4tt5pvbr6A
+local color_mask2 = Color(0,0,0,0)
+
+local function drawStencilSphere( pos, ref, compare_func, radius, color, detail )
+    render.SetStencilReferenceValue( ref )
+    render.SetStencilCompareFunction( compare_func )
+    render.DrawSphere(pos, radius, detail, detail, color)
+end
+
+-- Call this before calling render.AddWorldRing()
+function render.StartWorldRings()
+    render.WORLD_RINGS = {}
+    cam.IgnoreZ(false)
+    render.SetStencilEnable(true)
+    render.SetStencilTestMask(255)
+    render.SetStencilWriteMask(255)
+    render.ClearStencil()
+    render.SetColorMaterial()
+end
+
+-- Args: pos = where, radius = how big, [thicc = how thick, detail = how laggy]
+-- Detail must be an odd number or it will look like shit.
+function render.AddWorldRing(pos, radius, thicc, detail)
+    detail = detail or 24
+    thicc = thicc or 10
+    local z = {detail = detail, thicc = thicc, pos = pos, outer_r = radius, inner_r = math.max(radius-thicc,0)}
+    table.insert(render.WORLD_RINGS, z)
+end
+
+-- Call this to actually draw the rings added with render.AddWorldRing()
+function render.FinishWorldRings(color)
+    local ply = LocalPlayer()
+    local zones = render.WORLD_RINGS
+
+    render.SetStencilZFailOperation( STENCILOPERATION_REPLACE )
+
+    for i, zone in ipairs(zones) do
+        --local outer_r = zone.radius
+        drawStencilSphere(zone.pos, 1, STENCILCOMPARISONFUNCTION_ALWAYS, -zone.outer_r, color_mask2, zone.detail ) -- big, inside-out
+    end
+    render.SetStencilZFailOperation( STENCILOPERATION_DECR )
+    for i, zone in ipairs(zones) do
+       -- local outer_r = zone.radius
+        drawStencilSphere(zone.pos, 1, STENCILCOMPARISONFUNCTION_ALWAYS, zone.outer_r, color_mask2, zone.detail ) -- big
+    end
+    render.SetStencilZFailOperation( STENCILOPERATION_INCR )
+    for i, zone in ipairs(zones) do
+        drawStencilSphere(zone.pos, 1, STENCILCOMPARISONFUNCTION_ALWAYS, -zone.inner_r, color_mask2, zone.detail ) -- small, inside-out
+    end
+    render.SetStencilZFailOperation( STENCILOPERATION_DECR )
+    for i, zone in ipairs(zones) do
+        drawStencilSphere(zone.pos, 1, STENCILCOMPARISONFUNCTION_ALWAYS, zone.inner_r, color_mask2, zone.detail ) -- small
+    end
+    render.SetStencilCompareFunction( STENCILCOMPARISONFUNCTION_EQUAL )
+
+    local cam_pos = ply:EyePos()
+    local cam_angle = ply:EyeAngles()
+    local cam_normal = cam_angle:Forward()
+    cam.IgnoreZ(true)
+    render.SetStencilReferenceValue( 1 )
+    render.DrawQuadEasy(cam_pos + cam_normal * 10, -cam_normal,10000,10000,color,cam_angle.roll)
+    cam.IgnoreZ(false)
+    render.SetStencilEnable(false)
+end

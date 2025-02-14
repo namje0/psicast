@@ -115,11 +115,9 @@ local function psicast_binds(ply, bind, pressed)
             return true
         elseif (bind == "invnext") then
             psicast_cycle(1)
-            print("lol")
             return true
         elseif (bind == "invprev") then
             psicast_cycle(-1)
-            print("lol")
             return true
         end
     end

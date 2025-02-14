@@ -9,7 +9,7 @@ local function create_entity(ability)
     ent.AdminOnly = ability.adminOnly or false
     ent.PrintName = ability.name
     ent.Ability = ability.intName
-    ent.Icon = ability.icon or "vgui/stimlogo.png"
+    ent.IconOverride = ability.icon or "vgui/stimlogo.png"
     ent.Model = ability.model or "models/Items/battery.mdl"
 
     scripted_ents.Register(ent, ability.intName)

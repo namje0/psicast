@@ -10,13 +10,13 @@ ENT.AdminOnly = false
 
 if SERVER then
     function ENT:Initialize()
-        self:SetModel("models/danga1w1/psychostim.mdl")
+        self:SetModel("models/Items/item_item_crate.mdl")
 
         self:PhysicsInit(SOLID_VPHYSICS)
         self:SetMoveType(MOVETYPE_VPHYSICS)
         self:SetSolid(SOLID_VPHYSICS)
 
-        self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+        self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
         local phys = self:GetPhysicsObject()
 
