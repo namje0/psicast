@@ -1,7 +1,8 @@
 function namjepsi.cast(len, ply)
 	if !IsValid(ply) or !ply:Alive() then return end
 
-	local slot = net.ReadDouble()
+	local slot = net.ReadInt(4)
+	local range = net.ReadInt(16)
 	local ability = namjepsi.abilities[ply.namjepsi_slots[slot]]
 	if !ability then error("Ability " .. ply.namjepsi_slots[slot] .. "not found!") return end
 
@@ -15,12 +16,11 @@ function namjepsi.cast(len, ply)
 	else
 		local tr = util.TraceLine( {
 			start = ply:GetShootPos(),
-			endpos = ply:GetShootPos() + ply:GetAimVector() * ability.range,
+			endpos = ply:GetShootPos() + ply:GetAimVector() * math.floor(math.Clamp(range, 50, ability.range)),
 			filter = ply,
 			mask = MASK_SHOT
 		} )
 		pos = tr.HitPos
-		print(pos)
 	end
 
 	ability.effect(ply, pos)
@@ -29,7 +29,7 @@ function namjepsi.cast(len, ply)
 	ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))
 
 	--CD
-	ply.namjepsi_cooldowns[slot] = CurTime() + ability.cooldown
+	ply.namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
 end
 net.Receive("namjepsi_cast", namjepsi.cast)
 

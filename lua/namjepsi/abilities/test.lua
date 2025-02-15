@@ -9,8 +9,8 @@ namjepsi.abilities["test"] = {
 	castType = "instant",
 	targeting = "Area",
 	selfOnly = false,
-	range = 600,
-	radius = 120,
+	range = 500,
+	radius = 100,
 	cooldown = 4.5,
 	cost = function()
 		return 25
@@ -22,11 +22,11 @@ namjepsi.abilities["test"] = {
 
 	effect = function(ply, ...)
 		local args = ...
-		local pos = Vector(args[1], args[2], args[3])
 		if CLIENT then
 			print("test effect client")
 		end
 		if SERVER then
+			local pos = Vector(args[1], args[2], args[3])
 			local ability = namjepsi.abilities["test"]
 			local effect_data = EffectData()
 			effect_data:SetOrigin( pos )

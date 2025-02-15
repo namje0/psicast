@@ -29,6 +29,6 @@ end)
 
 net.Receive("namjepsi_complete_cd", function()
     if !IsValid(LocalPlayer()) then return end
-    local slot = net.ReadInt(8)
-    LocalPlayer().namjepsi_cooldowns[slot] = nil
+    local ability = net.ReadString()
+    LocalPlayer().namjepsi_cooldowns[ability] = nil
 end)

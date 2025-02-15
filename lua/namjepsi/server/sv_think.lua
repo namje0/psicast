@@ -6,12 +6,12 @@ local function ply_think(ply)
 		--cooldown
 		local cooldowns = ply.namjepsi_cooldowns
 		if cooldowns then
-			for slot, time in pairs(cooldowns) do
+			for ability, time in pairs(cooldowns) do
 				if time < CurTime() then
-					print("cooldown complete for " .. slot)
-					cooldowns[slot] = nil
+					print("cooldown complete for " .. ability)
+					cooldowns[ability] = nil
 					net.Start("namjepsi_complete_cd")
-					net.WriteInt(slot, 8)
+					net.WriteString(ability)
 					net.Send(ply)
 				end
 			end

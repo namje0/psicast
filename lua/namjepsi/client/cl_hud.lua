@@ -115,11 +115,11 @@ local function namjepsi_hand_ui(hands)
 
         local ability, cooldown
         if namjepsi.current_slot then
+            ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
             local cooldowns = LocalPlayer().namjepsi_cooldowns
             if cooldowns then
-                cooldown = cooldowns[namjepsi.current_slot]
+                cooldown = cooldowns[ability.intName]
             end
-            ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
         end
 
         local pos, ang = ((hand:GetTranslation() + hand:GetAngles():Forward() * 3.2)  + hand:GetAngles():Right() * 2) + hand:GetAngles():Up() * 2.5, hand:GetAngles()
@@ -187,20 +187,23 @@ local function namjepsi_fx()
 
         local tr = util.TraceLine( {
             start = ply:GetShootPos(),
-            endpos = ply:GetShootPos() + ply:GetAimVector() * ability.range,
+            endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
             filter = ply,
             mask = MASK_SHOT
         } )
         pos = tr.HitPos
 
-        local shake = math.sin(RealTime() * 3)
+        --[[
+            TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
+        ]]
+
         cam.Start3D() -- Start the 3D function so we can draw onto the screen.
         render.StartWorldRings()
-        render.AddWorldRing(pos, ability.radius + shake, 4, 32)
-        render.FinishWorldRings(ability.theme)
+        render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
+        render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
         render.SetMaterial(cursor)
         cam.IgnoreZ(true)
-        render.DrawSprite(pos, 12 + shake, 12 + shake, color_white)
+        render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
         cam.IgnoreZ(false)
         cam.End3D()
     end
@@ -237,8 +240,8 @@ function render.StartWorldRings()
     render.WORLD_RINGS = {}
     cam.IgnoreZ(false)
     render.SetStencilEnable(true)
-    render.SetStencilTestMask(255)
-    render.SetStencilWriteMask(255)
+    --render.SetStencilTestMask(255)
+    --render.SetStencilWriteMask(255)
     render.ClearStencil()
     render.SetColorMaterial()
 end

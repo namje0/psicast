@@ -9,7 +9,7 @@ namjepsi.abilities["melon"] = {
 	castType = "instant",
 	targeting = "Area",
 	selfOnly = false,
-	range = 200,
+	range = 1500,
 	radius = 20,
 	cooldown = 4,
 	cost = function()
@@ -22,11 +22,11 @@ namjepsi.abilities["melon"] = {
 
 	effect = function(ply, ...)
 		local args = ...
-		local pos = Vector(args[1], args[2], args[3])
 		if CLIENT then
 			print("test effect client")
 		end
 		if SERVER then
+			local pos = Vector(args[1], args[2], args[3])
 			local ent = ents.Create("prop_physics")
 			ent:SetModel("models/props_junk/watermelon01.mdl")
 			ent:SetPos(pos)

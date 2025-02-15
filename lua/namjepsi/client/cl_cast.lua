@@ -1,6 +1,7 @@
 namjepsi.casting = false
 namjepsi.self_target = false
 namjepsi.current_slot = 1
+namjepsi.range = 0
 
 local function send_slow(time)
     if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
@@ -19,6 +20,14 @@ local function is_slots_empty()
     return true
 end
 
+local function psicast_zoom(increment)
+    local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+    if !ability then return end
+
+    if increment == 0 then namjepsi.range = ability.range return end
+    namjepsi.range = math.floor(math.Clamp(namjepsi.range + ((ability.range / 10) * increment), 50, ability.range))
+end
+
 local function psicast_cycle(slot)
     --if is_slots_empty() then return end
     local num_slots = LocalPlayer().namjepsi_slots
@@ -33,6 +42,8 @@ local function psicast_cycle(slot)
     if LocalPlayer().namjepsi_slots[namjepsi.current_slot] == "none" then
         psicast_cycle(slot)
     end
+
+    psicast_zoom(0)
 end
 
 local function psicast_start()
@@ -53,6 +64,8 @@ local function psicast_start()
 
     --singleplayer time slowdown
     send_slow(true)
+
+    psicast_zoom(0)
 end
 
 local function psicast_cancel()
@@ -78,7 +91,7 @@ local function psicast_release()
         return
     end
 
-    if LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot] then
+    if LocalPlayer().namjepsi_cooldowns[ability.intName] then
         psicast_cancel()
         return
     end
@@ -89,9 +102,11 @@ local function psicast_release()
     end
 
     net.Start("namjepsi_cast")
-    net.WriteDouble(namjepsi.current_slot)
+    net.WriteInt(namjepsi.current_slot, 4)
+    net.WriteInt(namjepsi.range, 16)
     net.SendToServer()
-    LocalPlayer().namjepsi_cooldowns[namjepsi.current_slot] = CurTime() + ability.cooldown
+    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+    ability.effect()
 end
 
 local function psicast_disable_keys(_, cmd)
@@ -113,13 +128,20 @@ local function psicast_binds(ply, bind, pressed)
         if (bind == "impulse 100") then
             psicast_cancel()
             return true
-        elseif (bind == "invnext") then
+        elseif input.IsMouseDown(107) then
             psicast_cycle(1)
             return true
-        elseif (bind == "invprev") then
+        elseif input.IsMouseDown(108) then
             psicast_cycle(-1)
             return true
+        elseif (bind == "invnext") then
+            psicast_zoom(-1)
+            return true
+        elseif (bind == "invprev") then
+            psicast_zoom(1)
+            return true
         end
+
     end
 end
 
