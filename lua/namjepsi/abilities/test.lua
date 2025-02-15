@@ -16,10 +16,6 @@ namjepsi.abilities["test"] = {
 		return 25
 	end,
 
-	areaTargeting = function()
-		return nil
-	end,
-
 	effect = function(ply, ...)
 		local args = ...
 		if CLIENT then

@@ -11,17 +11,24 @@ function namjepsi.cast(len, ply)
 	--get target/pos
 	local target_entities = istable(ability.targeting)
 	local pos, target
+
 	if target_entities then
 		print("target ent")
 	else
-		local tr = util.TraceLine( {
-			start = ply:GetShootPos(),
-			endpos = ply:GetShootPos() + ply:GetAimVector() * math.floor(math.Clamp(range, 50, ability.range)),
-			filter = ply,
-			mask = MASK_SHOT
-		} )
-		pos = tr.HitPos
+		if ability.areaTargeting then
+			pos = ability.areaTargeting(ply, range)
+		else
+			local tr = util.TraceLine( {
+				start = ply:GetShootPos(),
+				endpos = ply:GetShootPos() + ply:GetAimVector() * math.floor(math.Clamp(range, 50, ability.range)),
+				filter = ply,
+				mask = MASK_SHOT
+			} )
+			pos = tr.HitPos
+		end
 	end
+
+	if !pos then return end
 
 	ability.effect(ply, pos)
 

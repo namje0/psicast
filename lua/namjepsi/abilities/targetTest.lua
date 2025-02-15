@@ -1,8 +1,8 @@
-namjepsi.abilities["melon"] = {
-	intName = "melon",
-	name = "Melonkinesis",
-	desc = "Spawn a melon",
-	theme = Color(21,255,185),
+namjepsi.abilities["targetTest"] = {
+	intName = "targetTest",
+	name = "Vaporize Target",
+	desc = "Kill.",
+	theme = Color(159,123,163),
 	icon = "vgui/namjepsi_abilities/melon.png",
 
 	adminOnly = false,

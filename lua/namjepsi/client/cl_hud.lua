@@ -185,27 +185,53 @@ local function namjepsi_fx()
         local trace = ply:GetEyeTrace()
         local pos, target
 
-        local tr = util.TraceLine( {
-            start = ply:GetShootPos(),
-            endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
-            filter = ply,
-            mask = MASK_SHOT
-        } )
-        pos = tr.HitPos
+        if ability.areaTargeting then
+            pos = ability.areaTargeting(ply, namjepsi.range)
+        else
+            local tr = util.TraceLine( {
+                start = ply:GetShootPos(),
+                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                filter = ply,
+                mask = MASK_SHOT
+            } )
+            pos = tr.HitPos
+        end
 
-        --[[
-            TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
-        ]]
-
-        cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-        render.StartWorldRings()
-        render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
-        render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
-        render.SetMaterial(cursor)
-        cam.IgnoreZ(true)
-        render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
-        cam.IgnoreZ(false)
-        cam.End3D()
+        --only used when ability custom areaTaregting returns nil
+        if !pos then
+            if !namjepsi.invalid_pos then
+                namjepsi.invalid_pos = true
+            end
+            local tr = util.TraceLine( {
+                start = ply:GetShootPos(),
+                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                filter = ply,
+                mask = MASK_SHOT
+            } )
+            pos = tr.HitPos
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.SetMaterial(Material("vgui/noability.png"))
+            cam.IgnoreZ(true)
+            render.DrawSprite(pos, 30, 30, Color(255, 100, 100, cast_alpha))
+            cam.IgnoreZ(false)
+            cam.End3D()
+        else
+            if namjepsi.invalid_pos then
+                namjepsi.invalid_pos = false
+            end
+            --[[
+                TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
+            ]]
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.StartWorldRings()
+            render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
+            render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
+            render.SetMaterial(cursor)
+            cam.IgnoreZ(true)
+            render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+            cam.IgnoreZ(false)
+            cam.End3D()
+        end
     end
 end
 
@@ -240,8 +266,8 @@ function render.StartWorldRings()
     render.WORLD_RINGS = {}
     cam.IgnoreZ(false)
     render.SetStencilEnable(true)
-    --render.SetStencilTestMask(255)
-    --render.SetStencilWriteMask(255)
+    render.SetStencilTestMask(255)
+    render.SetStencilWriteMask(255)
     render.ClearStencil()
     render.SetColorMaterial()
 end

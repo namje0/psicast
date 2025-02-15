@@ -2,6 +2,7 @@ namjepsi.casting = false
 namjepsi.self_target = false
 namjepsi.current_slot = 1
 namjepsi.range = 0
+namjepsi.invalid_pos = false
 
 local function send_slow(time)
     if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
@@ -86,17 +87,7 @@ local function psicast_release()
     send_slow(false)
 
     local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
-    if !ability then
-        psicast_cancel()
-        return
-    end
-
-    if LocalPlayer().namjepsi_cooldowns[ability.intName] then
-        psicast_cancel()
-        return
-    end
-
-    if LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() then
+    if !ability or LocalPlayer().namjepsi_cooldowns[ability.intName] or LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() or namjepsi.invalid_pos then
         psicast_cancel()
         return
     end
@@ -106,7 +97,7 @@ local function psicast_release()
     net.WriteInt(namjepsi.range, 16)
     net.SendToServer()
     LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
-    ability.effect()
+    ability.effect(LocalPlayer())
 end
 
 local function psicast_disable_keys(_, cmd)
