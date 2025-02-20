@@ -217,25 +217,25 @@ local function namjepsi_fx()
                         target = tr.Entity
                     end
                 end
+            end
 
-                if !target then
-                    if !namjepsi.invalid_pos then
-                        namjepsi.invalid_pos = true
-                    end
-                    namjepsi.target = nil
-                else
-                    if namjepsi.invalid_pos then
-                        namjepsi.invalid_pos = false
-                    end
-                    namjepsi.target = target
-
-                    cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-                    render.SetMaterial(cursor)
-                    cam.IgnoreZ(true)
-                    render.DrawSprite(target:LocalToWorld(target:OBBCenter()), 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
-                    cam.IgnoreZ(false)
-                    cam.End3D()
+            if !target then
+                if !namjepsi.invalid_pos then
+                    namjepsi.invalid_pos = true
                 end
+                namjepsi.target = nil
+            else
+                if namjepsi.invalid_pos then
+                    namjepsi.invalid_pos = false
+                end
+                namjepsi.target = target
+
+                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+                render.SetMaterial(cursor)
+                cam.IgnoreZ(true)
+                render.DrawSprite(target:LocalToWorld(target:OBBCenter()), 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+                cam.IgnoreZ(false)
+                cam.End3D()
             end
         else
             local pos
