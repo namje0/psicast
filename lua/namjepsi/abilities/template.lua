@@ -1,3 +1,5 @@
+--redo it later
+
 namjepsi.abilities["template"] = {
 	intName = "test", --internal name for an ability
 	name = "Test Ability", --display name for an ability

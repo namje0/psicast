@@ -7,7 +7,7 @@ namjepsi.abilities["test"] = {
 
 	adminOnly = false,
 	castType = "instant",
-	targeting = "Area",
+	targeting = 1,
 	selfOnly = false,
 	range = 500,
 	radius = 100,
@@ -20,6 +20,11 @@ namjepsi.abilities["test"] = {
 		local args = ...
 		if CLIENT then
 			print("test effect client")
+			local pos = Vector(args[1], args[2], args[3])
+			local effect_data = EffectData()
+			effect_data:SetOrigin( pos )
+			effect_data:SetNormal(pos )
+			util.Effect( "WaterSurfaceExplosion", effect_data )
 		end
 		if SERVER then
 			local pos = Vector(args[1], args[2], args[3])

@@ -7,7 +7,7 @@ namjepsi.abilities["melon"] = {
 
 	adminOnly = false,
 	castType = "instant",
-	targeting = "Area",
+	targeting = 1,
 	selfOnly = false,
 	range = 1500,
 	radius = 20,

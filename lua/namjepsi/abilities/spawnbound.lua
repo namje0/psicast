@@ -7,7 +7,7 @@ namjepsi.abilities["spawnbound"] = {
 
 	adminOnly = false,
 	castType = "instant",
-	targeting = "Area",
+	targeting = 1,
 	selfOnly = false,
 	range = 450,
 	radius = 20,

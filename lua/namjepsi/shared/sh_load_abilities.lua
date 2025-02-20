@@ -15,6 +15,7 @@ local function create_entity(ability)
     scripted_ents.Register(ent, ability.intName)
 end
 
+--TODO: fix case
 function namjepsi.load_ability()
     local id = 0
     for _, v in pairs(file.Find(FILE_PATH .. "/*", "LUA")) do

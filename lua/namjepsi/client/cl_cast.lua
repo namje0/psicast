@@ -1,8 +1,11 @@
 namjepsi.casting = false
 namjepsi.self_target = false
 namjepsi.current_slot = 1
-namjepsi.range = 0
 namjepsi.invalid_pos = false
+
+namjepsi.range = 0
+namjepsi.target = nil
+namjepsi.pos = nil
 
 local function send_slow(time)
     if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
@@ -10,6 +13,38 @@ local function send_slow(time)
         net.WriteBool(time)
         net.SendToServer()
     end
+end
+
+local function psicast_cancel()
+    LocalPlayer():EmitSound( "player/suit_denydevice.wav")
+    namjepsi.casting = false
+    namjepsi.selfTarget = false
+    VManip:Remove()
+    --singleplayer time slowdown
+    send_slow(false)
+end
+
+local function client_cast()
+    local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+    if !ability or LocalPlayer().namjepsi_cooldowns[ability.intName] or LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() or namjepsi.invalid_pos then
+        psicast_cancel()
+        return
+    end
+
+    net.Start("namjepsi_cast")
+    net.WriteInt(namjepsi.current_slot, 4)
+    net.WriteInt(namjepsi.range, 16)
+
+    if namjepsi.target then
+        net.WriteEntity(namjepsi.target)
+    end
+
+    net.SendToServer()
+    print("client cast")
+    local args = namjepsi.pos != nil and namjepsi.pos or namjepsi.target != nil and namjepsi.target or nil
+    ability.effect(LocalPlayer(), args)
+
+    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
 end
 
 local function is_slots_empty()
@@ -69,15 +104,6 @@ local function psicast_start()
     psicast_zoom(0)
 end
 
-local function psicast_cancel()
-    LocalPlayer():EmitSound( "player/suit_denydevice.wav")
-    namjepsi.casting = false
-    namjepsi.selfTarget = false
-    VManip:Remove()
-    --singleplayer time slowdown
-    send_slow(false)
-end
-
 local function psicast_release()
     if !namjepsi.casting then return end
     VManip:QuitHolding("cast")
@@ -92,12 +118,7 @@ local function psicast_release()
         return
     end
 
-    net.Start("namjepsi_cast")
-    net.WriteInt(namjepsi.current_slot, 4)
-    net.WriteInt(namjepsi.range, 16)
-    net.SendToServer()
-    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
-    ability.effect(LocalPlayer())
+    client_cast()
 end
 
 local function psicast_disable_keys(_, cmd)

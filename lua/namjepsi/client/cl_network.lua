@@ -32,3 +32,10 @@ net.Receive("namjepsi_complete_cd", function()
     local ability = net.ReadString()
     LocalPlayer().namjepsi_cooldowns[ability] = nil
 end)
+
+net.Receive("namjepsi_invalid_cast", function()
+    if !IsValid(LocalPlayer()) then return end
+    local ability = net.ReadString()
+    print("Invalid cast for ability " .. ability)
+    LocalPlayer().namjepsi_cooldowns[ability] = nil
+end)

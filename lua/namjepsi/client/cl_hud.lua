@@ -182,58 +182,128 @@ local function namjepsi_fx()
     if namjepsi.casting then
         local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
         if !ability then return end
-        local trace = ply:GetEyeTrace()
-        local pos, target
+        local target_entities = istable(ability.targeting)
 
-        if ability.areaTargeting then
-            pos = ability.areaTargeting(ply, namjepsi.range)
-        else
-            local tr = util.TraceLine( {
-                start = ply:GetShootPos(),
-                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
-                filter = ply,
-                mask = MASK_SHOT
-            } )
-            pos = tr.HitPos
-        end
+        if target_entities then
+            local target
+            local target_types = ability.targeting
+            if ability.areaTargeting then
+                target = ability.areaTargeting(ply, namjepsi.range)
+            else
+                local tr = util.TraceLine( {
+                    start = ply:GetShootPos(),
+                    endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                    filter = ply,
+                    mask = MASK_SHOT_HULL
+                } )
+                if ( !IsValid( tr.Entity ) ) then
+                    tr = util.TraceHull( {
+                        start = ply:GetShootPos(),
+                        endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                        filter = ply,
+                        mins = Vector( -10, -10, -8 ),
+                        maxs = Vector( 10, 10, 8 ),
+                        mask = MASK_SHOT_HULL
+                    } )
+                end
+                if (table.HasValue(target_types,"npc")) then
+                    if ( tr.Hit and tr.Entity:IsNPC()) then
+                        target = tr.Entity
+                    elseif ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+                        target = tr.Entity
+                    end
+                else
+                    if ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+                        target = tr.Entity
+                    end
+                end
 
-        --only used when ability custom areaTaregting returns nil
-        if !pos then
-            if !namjepsi.invalid_pos then
-                namjepsi.invalid_pos = true
+                if !target then
+                    if !namjepsi.invalid_pos then
+                        namjepsi.invalid_pos = true
+                    end
+                    namjepsi.target = nil
+                else
+                    if namjepsi.invalid_pos then
+                        namjepsi.invalid_pos = false
+                    end
+                    namjepsi.target = target
+
+                    cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+                    render.SetMaterial(cursor)
+                    cam.IgnoreZ(true)
+                    render.DrawSprite(target:LocalToWorld(target:OBBCenter()), 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+                    cam.IgnoreZ(false)
+                    cam.End3D()
+                end
             end
-            local tr = util.TraceLine( {
-                start = ply:GetShootPos(),
-                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
-                filter = ply,
-                mask = MASK_SHOT
-            } )
-            pos = tr.HitPos
-            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-            render.SetMaterial(Material("vgui/noability.png"))
-            cam.IgnoreZ(true)
-            render.DrawSprite(pos, 30, 30, Color(255, 100, 100, cast_alpha))
-            cam.IgnoreZ(false)
-            cam.End3D()
         else
-            if namjepsi.invalid_pos then
-                namjepsi.invalid_pos = false
+            local pos
+            if ability.areaTargeting then
+                pos = ability.areaTargeting(ply, namjepsi.range)
+            else
+                local tr = util.TraceLine( {
+                    start = ply:GetShootPos(),
+                    endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                    filter = ply,
+                    mask = MASK_SHOT
+                } )
+                pos = tr.HitPos
             end
-            --[[
-                TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
-            ]]
-            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-            render.StartWorldRings()
-            render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
-            render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
-            render.SetMaterial(cursor)
-            cam.IgnoreZ(true)
-            render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
-            cam.IgnoreZ(false)
-            cam.End3D()
+
+            --only used when ability custom areaTaregting returns nil
+            if !pos then
+                if !namjepsi.invalid_pos then
+                    namjepsi.invalid_pos = true
+                end
+                local tr = util.TraceLine( {
+                    start = ply:GetShootPos(),
+                    endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                    filter = ply,
+                    mask = MASK_SHOT
+                } )
+                pos = tr.HitPos
+                namjepsi.pos = nil
+
+                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+                render.SetMaterial(Material("vgui/noability.png"))
+                cam.IgnoreZ(true)
+                render.DrawSprite(pos, 30, 30, Color(255, 100, 100, cast_alpha))
+                cam.IgnoreZ(false)
+                cam.End3D()
+            else
+                if namjepsi.invalid_pos then
+                    namjepsi.invalid_pos = false
+                end
+
+                namjepsi.pos = pos
+                --[[
+                    TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
+                ]]
+                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+                render.StartWorldRings()
+                render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
+                render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
+                render.SetMaterial(cursor)
+                cam.IgnoreZ(true)
+                render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+                cam.IgnoreZ(false)
+                cam.End3D()
+            end
         end
     end
 end
+
+--TODO: Halos suck ass for outlines + shits on performance, change later?
+local function namjepsi_target_halos()
+    local ply = LocalPlayer()
+    if !namjepsi.casting or !namjepsi.target then return end
+    local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
+    if !ability then return end
+
+    halo.Add( {namjepsi.target}, ability.theme, 3, 3, 3, true, true )
+end
+hook.Add( "PreDrawHalos", "namjepsi_target_halos", namjepsi_target_halos )
 
 hook.Add("PostDrawPlayerHands", "namjepsi_hand_ui", function()
     local wep = LocalPlayer():GetActiveWeapon()

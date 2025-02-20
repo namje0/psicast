@@ -8,29 +8,82 @@ function namjepsi.cast(len, ply)
 
 	print("casting " .. ply.namjepsi_slots[slot])
 
+	range = range * 1.2
+
 	--get target/pos
 	local target_entities = istable(ability.targeting)
-	local pos, target
-
 	if target_entities then
-		print("target ent")
+		local target
+		local target_types = ability.targeting
+		if ability.areaTargeting then
+			target = ability.areaTargeting(ply, range)
+		else
+			local tr = util.TraceLine( {
+				start = ply:GetShootPos(),
+				endpos = ply:GetShootPos() + ply:GetAimVector() * range,
+				filter = ply,
+				mask = MASK_SHOT_HULL
+			} )
+			if ( !IsValid( tr.Entity ) ) then
+				tr = util.TraceHull( {
+					start = ply:GetShootPos(),
+					endpos = ply:GetShootPos() + ply:GetAimVector() * range,
+					filter = ply,
+					mins = Vector( -40, -40, -24 ),
+					maxs = Vector( 40, 40, 24 ),
+					mask = MASK_SHOT_HULL
+				} )
+			end
+			if (table.HasValue(target_types,"npc")) then
+				if ( tr.Hit and tr.Entity:IsNPC()) then
+					target = tr.Entity
+				elseif ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+					target = tr.Entity
+				end
+			else
+				if ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+					target = tr.Entity
+				end
+			end
+		end
+
+		local expected_target = net.ReadEntity()
+		--[[local distance = ply:GetPos():Distance(target:GetPos())
+		if distance > ability.range + 10 then
+			target = nil
+		end]]
+
+		if !target then
+			net.Start("namjepsi_invalid_cast")
+			net.WriteString(ability.intName)
+			net.Send(ply)
+			print("Target cast for " .. ply:Name() .. " was invalid for " .. ability.intName)
+			return
+		elseif target != expected_target then
+			net.Start("namjepsi_invalid_cast")
+			net.WriteString(ability.intName)
+			net.Send(ply)
+			print("Target cast for " .. ply:Name() .. " was at " .. target:EntIndex() .. " instead of expected " .. expected_target:EntIndex() .. " for " .. ability.intName)
+			return
+		end
+		ability.effect(ply, target)
 	else
+		local pos
 		if ability.areaTargeting then
 			pos = ability.areaTargeting(ply, range)
 		else
 			local tr = util.TraceLine( {
 				start = ply:GetShootPos(),
-				endpos = ply:GetShootPos() + ply:GetAimVector() * math.floor(math.Clamp(range, 50, ability.range)),
+				endpos = ply:GetShootPos() + ply:GetAimVector() * math.floor(math.Clamp(range, 50, ability.range * 1.2)),
 				filter = ply,
 				mask = MASK_SHOT
 			} )
 			pos = tr.HitPos
 		end
+
+		if !pos then return end
+		ability.effect(ply, pos)
 	end
-
-	if !pos then return end
-
-	ability.effect(ply, pos)
 
 	local cost = ability.cost()
 	ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))

@@ -7,7 +7,7 @@ namjepsi.abilities["blink"] = {
 
 	adminOnly = false,
 	castType = "instant",
-	targeting = "Area",
+	targeting = 1,
 	selfOnly = false,
 	range = 450,
 	radius = 15,
@@ -48,8 +48,12 @@ namjepsi.abilities["blink"] = {
 						maxs = Vector(16, 16, 1),
 						filter = ply
 					});
-					groundHit = !clear_trace.Hit
+					if clear_trace.Hit then
+						return nil
+					end
 					--pos = ground_trace.HitPos
+				elseif !edge_trace.Hit then
+					return nil
 				end;
 			end;
 			pos = ground_trace.HitPos

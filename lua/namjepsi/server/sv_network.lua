@@ -4,6 +4,7 @@ util.AddNetworkString( "namjepsi_init_slots" )
 util.AddNetworkString( "namjepsi_update_slot" )
 util.AddNetworkString( "namjepsi_stim" )
 util.AddNetworkString( "namjepsi_complete_cd" )
+util.AddNetworkString( "namjepsi_invalid_cast" )
 
 --singleplayer slowing down time
 if game.SinglePlayer() then
