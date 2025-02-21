@@ -13,41 +13,45 @@ function namjepsi.cast(len, ply)
 	--get target/pos
 	local target_entities = istable(ability.targeting)
 	if target_entities then
+		local net_target = net.ReadEntity()
+		local self_target = net_target == ply and true or false
 		local target
 		local target_types = ability.targeting
 		if ability.areaTargeting then
-			target = ability.areaTargeting(ply, range)
+			target = ability.areaTargeting(ply, range, self_target)
 		else
-			local tr = util.TraceLine( {
-				start = ply:GetShootPos(),
-				endpos = ply:GetShootPos() + ply:GetAimVector() * range,
-				filter = ply,
-				mask = MASK_SHOT_HULL
-			} )
-			if ( !IsValid( tr.Entity ) ) then
-				tr = util.TraceHull( {
+			if self_target then
+				target = ply
+			else
+				local tr = util.TraceLine( {
 					start = ply:GetShootPos(),
 					endpos = ply:GetShootPos() + ply:GetAimVector() * range,
 					filter = ply,
-					mins = Vector( -40, -40, -24 ),
-					maxs = Vector( 40, 40, 24 ),
 					mask = MASK_SHOT_HULL
 				} )
-			end
-			if (table.HasValue(target_types,"npc")) then
-				if ( tr.Hit and tr.Entity:IsNPC()) then
-					target = tr.Entity
-				elseif ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
-					target = tr.Entity
+				if ( !IsValid( tr.Entity ) ) then
+					tr = util.TraceHull( {
+						start = ply:GetShootPos(),
+						endpos = ply:GetShootPos() + ply:GetAimVector() * range,
+						filter = ply,
+						mins = Vector( -40, -40, -24 ),
+						maxs = Vector( 40, 40, 24 ),
+						mask = MASK_SHOT_HULL
+					} )
 				end
-			else
-				if ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
-					target = tr.Entity
+				if (table.HasValue(target_types,"npc")) then
+					if ( tr.Hit and tr.Entity:IsNPC()) then
+						target = tr.Entity
+					elseif ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+						target = tr.Entity
+					end
+				else
+					if ( tr.Hit and table.HasValue(target_types,tr.Entity:GetClass()) ) then
+						target = tr.Entity
+					end
 				end
 			end
 		end
-
-		local expected_target = net.ReadEntity()
 		--[[local distance = ply:GetPos():Distance(target:GetPos())
 		if distance > ability.range + 10 then
 			target = nil
@@ -59,7 +63,7 @@ function namjepsi.cast(len, ply)
 			net.Send(ply)
 			print("Target cast for " .. ply:Name() .. " was invalid for " .. ability.intName)
 			return
-		elseif target != expected_target then
+		elseif target != net_target then
 			net.Start("namjepsi_invalid_cast")
 			net.WriteString(ability.intName)
 			net.Send(ply)

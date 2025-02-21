@@ -38,4 +38,12 @@ net.Receive("namjepsi_invalid_cast", function()
     local ability = net.ReadString()
     print("Invalid cast for ability " .. ability)
     LocalPlayer().namjepsi_cooldowns[ability] = nil
+
+    local vmanip_anim = VManip:GetCurrentAnim()
+    --if table.HasValue(vmanip_anims, vmanip_anim) then
+    if vmanip_anim then
+        VManip:Remove()
+    end
+    --end
+    VManip:PlayAnim("castcancel2")
 end)

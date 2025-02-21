@@ -1,4 +1,10 @@
-local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha = 0, 0, 0, 0, 0
+local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha, target_alpha = 0, 0, 0, 0, 0, 0
+
+local target_lang = {
+    ["prop_door_rotating"] = "Door",
+    ["func_door"] = "Door",
+    ["prop_physics"] = "Object",
+}
 local psi_bar = {
     x = ScreenScale(14),
     y = ScrH() - ScreenScale(45),
@@ -8,10 +14,10 @@ local psi_bar = {
 local bar_length = psi_bar.w
 local trail_length = psi_bar.w
 
-surface.CreateFont( "namjepsi_ui", {
-    font = "Noto Sans",
+surface.CreateFont( "namjepsi_hud", {
+    font = "Noto Sans SemiBold",
     extended = false,
-    size = 60,
+    size = 30,
     weight = 700,
     blursize = 0,
     scanlines = 0,
@@ -26,7 +32,25 @@ surface.CreateFont( "namjepsi_ui", {
     outline = false,
 } )
 
-surface.CreateFont( "namjepsi_bold", {
+surface.CreateFont( "namjepsi_hud_small", {
+    font = "Noto Sans SemiBold",
+    extended = false,
+    size = 20,
+    weight = 700,
+    blursize = 0,
+    scanlines = 0,
+    antialias = true,
+    underline = false,
+    italic = false,
+    strikeout = false,
+    symbol = false,
+    rotary = false,
+    shadow = false,
+    additive = false,
+    outline = false,
+} )
+
+surface.CreateFont( "namjepsi_ui", {
     font = "Noto Sans SemiBold",
     extended = false,
     size = 52,
@@ -98,6 +122,29 @@ local function namjepsi_hud()
     else
         stim_alpha = math.Approach(stim_alpha, 0, 255 * FrameTime() / 1)
     end
+
+    --target
+    if namjepsi.casting then
+        local ability
+        if namjepsi.current_slot then
+            ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+        end
+        if !ability then return end
+        local is_targeting = istable(ability.targeting)
+        if !is_targeting then
+            target_alpha = 0
+            return
+        end
+        target_alpha = math.Approach(target_alpha, 200, 200 * FrameTime() * 2)
+        local target = !namjepsi.target and "none" or namjepsi.target:GetClass() == "player" and namjepsi.target:Name() or target_lang[namjepsi.target:GetClass()] or namjepsi.target:GetClass()
+        draw.SimpleTextOutlined("TARGET: " .. target, "namjepsi_hud", ScrW() / 2, ScrH() - 380, Color(255, 255, 255, target_alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, math.Clamp(target_alpha, 0, 80)))
+        if table.HasValue(ability.targeting, "player") then
+            local text = namjepsi.self_target and "Cancel self target" or "Target self"
+            draw.SimpleTextOutlined("[E] " .. text, "namjepsi_hud_small", ScrW() / 2, ScrH() - 350, Color(255, 255, 255, target_alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, math.Clamp(target_alpha, 0, 80)))
+        end
+    else
+        target_alpha = 0
+    end
 end
 hook.Add("HUDPaint", "namjepsi_hud", namjepsi_hud)
 
@@ -106,7 +153,7 @@ local function namjepsi_hand_ui(hands)
     if bone == nil then return end
     local hand = hands:GetBoneMatrix(bone)
 
-    if hand and namjepsi.casting then
+    if hand and namjepsi.casting then 
         local alpha_factor = .75
         if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
             alpha_factor = .5
@@ -157,7 +204,7 @@ local function namjepsi_hand_ui(hands)
         surface.SetMaterial(Material("vgui/energy.png"))
         surface.DrawTexturedRect( 320, 0, 50, 50 )
 
-        draw.SimpleText(ability and ability.cost() or "--", "namjepsi_bold", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(ability and ability.cost() or "--", "namjepsi_ui", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         --cooldown
         surface.SetDrawColor(Color(78, 75, 50, cast_alpha))
@@ -167,7 +214,7 @@ local function namjepsi_hand_ui(hands)
         surface.SetMaterial(Material("vgui/cooldown.png"))
         surface.DrawTexturedRect( 320, 70, 50, 50 )
 
-        draw.SimpleText(ability and ability.cooldown .. "s" or "--", "namjepsi_bold", 465, 122, Color(255, 255, 255, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(ability and ability.cooldown .. "s" or "--", "namjepsi_ui", 465, 122, Color(255, 255, 255, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         cam.End3D2D()
     else
@@ -179,16 +226,20 @@ local function namjepsi_fx()
     local ply = LocalPlayer()
     if !IsValid(ply) and !ply:Alive() then return end
     local cursor = Material( "particle/particle_glow_04" )
-    if namjepsi.casting then
-        local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
-        if !ability then return end
-        local target_entities = istable(ability.targeting)
+    if !namjepsi.casting then return end
+    local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
+    if !ability then return end
+    local target_entities = istable(ability.targeting)
 
-        if target_entities then
-            local target
-            local target_types = ability.targeting
-            if ability.areaTargeting then
-                target = ability.areaTargeting(ply, namjepsi.range)
+    if target_entities then
+        local target
+        namjepsi.pos = nil
+        local target_types = ability.targeting
+        if ability.areaTargeting then
+            target = ability.areaTargeting(ply, namjepsi.range, namjepsi.self_target)
+        else
+            if namjepsi.self_target and table.HasValue(ability.targeting, "player") then
+                target = ply
             else
                 local tr = util.TraceLine( {
                     start = ply:GetShootPos(),
@@ -218,78 +269,80 @@ local function namjepsi_fx()
                     end
                 end
             end
+        end
 
-            if !target then
-                if !namjepsi.invalid_pos then
-                    namjepsi.invalid_pos = true
-                end
-                namjepsi.target = nil
-            else
-                if namjepsi.invalid_pos then
-                    namjepsi.invalid_pos = false
-                end
-                namjepsi.target = target
-
-                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-                render.SetMaterial(cursor)
-                cam.IgnoreZ(true)
-                render.DrawSprite(target:LocalToWorld(target:OBBCenter()), 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
-                cam.IgnoreZ(false)
-                cam.End3D()
+        if !target then
+            if !namjepsi.invalid_pos then
+                namjepsi.invalid_pos = true
             end
+            namjepsi.target = nil
         else
-            local pos
-            if ability.areaTargeting then
-                pos = ability.areaTargeting(ply, namjepsi.range)
-            else
-                local tr = util.TraceLine( {
-                    start = ply:GetShootPos(),
-                    endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
-                    filter = ply,
-                    mask = MASK_SHOT
-                } )
-                pos = tr.HitPos
+            if namjepsi.invalid_pos then
+                namjepsi.invalid_pos = false
+            end
+            namjepsi.target = target
+
+            if target == ply then return end
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.SetMaterial(cursor)
+            cam.IgnoreZ(true)
+            render.DrawSprite(target:LocalToWorld(target:OBBCenter()), 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+            cam.IgnoreZ(false)
+            cam.End3D()
+        end
+    else
+        local pos
+        namjepsi.target = nil
+        if ability.areaTargeting then
+            pos = ability.areaTargeting(ply, namjepsi.range)
+        else
+            local tr = util.TraceLine( {
+                start = ply:GetShootPos(),
+                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                filter = ply,
+                mask = MASK_SHOT
+            } )
+            pos = tr.HitPos
+        end
+
+        --only used when ability custom areaTaregting returns nil
+        if !pos then
+            if !namjepsi.invalid_pos then
+                namjepsi.invalid_pos = true
+            end
+            local tr = util.TraceLine( {
+                start = ply:GetShootPos(),
+                endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
+                filter = ply,
+                mask = MASK_SHOT
+            } )
+            pos = tr.HitPos
+            namjepsi.pos = nil
+
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.SetMaterial(Material("vgui/noability.png"))
+            cam.IgnoreZ(true)
+            render.DrawSprite(pos, 30, 30, Color(255, 100, 100, cast_alpha))
+            cam.IgnoreZ(false)
+            cam.End3D()
+        else
+            if namjepsi.invalid_pos then
+                namjepsi.invalid_pos = false
             end
 
-            --only used when ability custom areaTaregting returns nil
-            if !pos then
-                if !namjepsi.invalid_pos then
-                    namjepsi.invalid_pos = true
-                end
-                local tr = util.TraceLine( {
-                    start = ply:GetShootPos(),
-                    endpos = ply:GetShootPos() + ply:GetAimVector() * namjepsi.range,
-                    filter = ply,
-                    mask = MASK_SHOT
-                } )
-                pos = tr.HitPos
-                namjepsi.pos = nil
-
-                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-                render.SetMaterial(Material("vgui/noability.png"))
-                cam.IgnoreZ(true)
-                render.DrawSprite(pos, 30, 30, Color(255, 100, 100, cast_alpha))
-                cam.IgnoreZ(false)
-                cam.End3D()
-            else
-                if namjepsi.invalid_pos then
-                    namjepsi.invalid_pos = false
-                end
-
-                namjepsi.pos = pos
-                --[[
-                    TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
-                ]]
-                cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-                render.StartWorldRings()
-                render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
-                render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
-                render.SetMaterial(cursor)
-                cam.IgnoreZ(true)
-                render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
-                cam.IgnoreZ(false)
-                cam.End3D()
-            end
+            namjepsi.pos = pos
+            --[[
+                TODO: Occasionally these stencil rings break and just become a big sphere... find solution or replace with something else
+            ]]
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.StartWorldRings()
+            render.AddWorldRing(pos, ability.radius + math.sin(RealTime() * 3), 4, 32)
+            render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, cast_alpha))
+            render.SetMaterial(cursor)
+            cam.IgnoreZ(true)
+            render.DrawSprite(pos, 12 + math.sin(RealTime() * 12), 12 + math.sin(RealTime() * 12), Color(255, 255, 255, cast_alpha))
+            cam.IgnoreZ(false)
+            cam.End3D()
         end
     end
 end
@@ -301,7 +354,9 @@ local function namjepsi_target_halos()
     local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
     if !ability then return end
 
-    halo.Add( {namjepsi.target}, ability.theme, 3, 3, 3, true, true )
+    local target = namjepsi.target == ply and nil or namjepsi.target
+    if !target then return end
+    halo.Add( {target}, ability.theme, 3, 3, 3, true, true )
 end
 hook.Add( "PreDrawHalos", "namjepsi_target_halos", namjepsi_target_halos )
 

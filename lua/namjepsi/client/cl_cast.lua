@@ -37,7 +37,7 @@ local function psicast_cancel()
     VManip:PlayAnim("castcancel2")
 
     namjepsi.casting = false
-    namjepsi.selfTarget = false
+    namjepsi.self_target = false
     --VManip:Remove()
     --singleplayer time slowdown
     send_slow(false)
@@ -101,6 +101,7 @@ local function psicast_cycle(slot)
         psicast_cycle(slot)
     end
 
+    namjepsi.self_target = false
     psicast_zoom(0)
 end
 
@@ -126,7 +127,7 @@ local function psicast_start()
 
     --singleplayer time slowdown
     send_slow(true)
-
+    namjepsi.self_target = false
     psicast_zoom(0)
 end
 
@@ -165,6 +166,8 @@ local function psicast_binds(ply, bind, pressed)
         if (bind == "impulse 100") then
             psicast_cancel()
             return true
+        elseif input.IsKeyDown(15) then
+            namjepsi.self_target = !namjepsi.self_target
         elseif input.IsMouseDown(107) then
             psicast_cycle(1)
             return true
