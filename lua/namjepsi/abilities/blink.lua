@@ -6,7 +6,7 @@ namjepsi.abilities["blink"] = {
 	icon = "vgui/namjepsi_abilities/blink.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = 1,
 	selfOnly = false,
 	range = 450,

@@ -33,6 +33,7 @@ net.Receive("namjepsi_complete_cd", function()
     LocalPlayer().namjepsi_cooldowns[ability] = nil
 end)
 
+--TODO: handle invalid cast for channel abilities
 net.Receive("namjepsi_invalid_cast", function()
     if !IsValid(LocalPlayer()) then return end
     local ability = net.ReadString()
@@ -46,4 +47,21 @@ net.Receive("namjepsi_invalid_cast", function()
     end
     --end
     VManip:PlayAnim("castcancel2")
+end)
+
+net.Receive("namjepsi_end_channel", function()
+    if !IsValid(LocalPlayer()) then return end
+
+    local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+    if !ability then return end
+
+    namjepsi.channeling = false
+    hook.Remove("VManipSegmentFinish","namjepsi_channel_idle")
+    VManip:Remove()
+    VManip:PlayAnim("channelend")
+
+    ability.channelEnd(LocalPlayer(), namjepsi.channel_args)
+
+    namjepsi.channel_args = nil
+    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
 end)

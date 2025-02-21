@@ -6,7 +6,7 @@ namjepsi.abilities["spawnbound"] = {
 	icon = "vgui/namjepsi_abilities/spawnbound.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = 1,
 	selfOnly = false,
 	range = 450,

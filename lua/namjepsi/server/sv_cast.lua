@@ -1,3 +1,17 @@
+function namjepsi.end_channel(ply, ability, from_client)
+	if !ability then error("Ability " .. ability.intName .. "not found!") return end
+	timer.Remove("namjepsi_" .. ability.intName .. "_channel_" .. ply:UserID())
+	if !ply.namjepsi_channel_args then return end
+	ability.channelEnd(ply, ply.namjepsi_channel_args)
+	ply.namjepsi_channel_args = nil
+	ply.namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+
+	if !from_client then
+		net.Start("namjepsi_end_channel")
+		net.Send(ply)
+	end
+end
+
 function namjepsi.cast(len, ply)
 	if !IsValid(ply) or !ply:Alive() then return end
 
@@ -6,11 +20,16 @@ function namjepsi.cast(len, ply)
 	local ability = namjepsi.abilities[ply.namjepsi_slots[slot]]
 	if !ability then error("Ability " .. ply.namjepsi_slots[slot] .. "not found!") return end
 
+	if ply.namjepsi_channel_args then
+		error("Attempted to cast ability while still channeling for " .. ply:Name())
+		return
+	end
+
 	print("casting " .. ply.namjepsi_slots[slot])
 
 	range = range * 1.2
 
-	--get target/pos
+	local args
 	local target_entities = istable(ability.targeting)
 	if target_entities then
 		local net_target = net.ReadEntity()
@@ -34,8 +53,8 @@ function namjepsi.cast(len, ply)
 						start = ply:GetShootPos(),
 						endpos = ply:GetShootPos() + ply:GetAimVector() * range,
 						filter = ply,
-						mins = Vector( -40, -40, -24 ),
-						maxs = Vector( 40, 40, 24 ),
+						mins = Vector( -10, -10, -8 ),
+						maxs = Vector( 10, 10, 8 ),
 						mask = MASK_SHOT_HULL
 					} )
 				end
@@ -70,7 +89,7 @@ function namjepsi.cast(len, ply)
 			print("Target cast for " .. ply:Name() .. " was at " .. target:EntIndex() .. " instead of expected " .. expected_target:EntIndex() .. " for " .. ability.intName)
 			return
 		end
-		ability.effect(ply, target)
+		args = target
 	else
 		local pos
 		if ability.areaTargeting then
@@ -86,16 +105,54 @@ function namjepsi.cast(len, ply)
 		end
 
 		if !pos then return end
-		ability.effect(ply, pos)
+		args = pos
 	end
 
+	if !args then return end
 	local cost = ability.cost()
-	ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))
 
-	--CD
-	ply.namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+	if ability.castType == 1 then
+		ability.effect(ply, args)
+		ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))
+		ply.namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+	elseif ability.castType == 2 then
+		ability.channelStart(ply, args)
+		--[[hook.Add( "Think", "namjepsi_" .. ability.intName .. "_channel_" .. ply:UserID(), function()
+			ability.effect(ply, args)
+		end)]]
+		ply.namjepsi_channel_args = args
+		timer.Create("namjepsi_" .. ability.intName .. "_channel_" .. ply:UserID(), .2, 0, function()
+			if ability.effect then
+				ability.effect(ply, args)
+			end
+			ply:SetNW2Float("namjepsi_energy", math.Clamp(ply:GetNW2Float("namjepsi_energy") - cost, 0, GetConVar("namjepsi_overcharge"):GetBool() and ply:GetNW2Int("namjepsi_max_energy") * 2 or ply:GetNW2Int("namjepsi_max_energy")))
+			if ply:GetNW2Float("namjepsi_energy") < cost then
+				namjepsi.end_channel(ply, ability, false)
+			end
+
+			if ability.channelRange then
+				if !IsValid(args) then return end
+				local dist = ply:GetPos():Distance(type(args) != "Vector" and args:GetPos() or args)
+				if dist > ability.channelRange then
+					namjepsi.end_channel(ply, ability, false)
+				end
+			end
+		end)
+		hook.Add("DoPlayerDeath", "namjepsi_" .. ability.intName .. "_channel_death_" .. ply:UserID(), function(dead_ply)
+			if dead_ply != ply then return end
+			namjepsi.end_channel(ply, ability, false)
+			hook.Remove("DoPlayerDeath", "namjepsi_" .. ability.intName .. "_channel_death_" .. ply:UserID())
+		end)
+	end
 end
 net.Receive("namjepsi_cast", namjepsi.cast)
+net.Receive("namjepsi_end_channel", function(len, ply)
+	local slot = net.ReadInt(4)
+	local ability = namjepsi.abilities[ply.namjepsi_slots[slot]]
+	if !ability then return end
+	namjepsi.end_channel(ply, ability, true)
+end)
+
 
 net.Receive("namjepsi_update_slot", function(len, ply)
 	if !IsValid(ply) then return end

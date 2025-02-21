@@ -49,6 +49,7 @@ local function ply_spawn(ply, transition)
     if !GetConVar("namjepsi_save_inv_on_death"):GetBool() and ply.init or !ply.init then
         print("wipe inv for " .. ply:Name())
 
+        ply.namjepsi_channel_args = nil
         ply.namjepsi_inv = {}
         ply.namjepsi_slots = {}
         ply.namjepsi_cooldowns = {}

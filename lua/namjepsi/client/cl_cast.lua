@@ -1,9 +1,11 @@
 namjepsi.casting = false
+namjepsi.channeling = false
 namjepsi.self_target = false
 namjepsi.current_slot = 1
 namjepsi.invalid_pos = false
 
 namjepsi.range = 0
+namjepsi.channel_args = nil
 namjepsi.target = nil
 namjepsi.pos = nil
 
@@ -16,6 +18,31 @@ namjepsi.pos = nil
     "channelidle",
     "channelend"
 }]]
+
+local function namjepsi_channel_idle(name,cursegment,islastsegment,segmentcount)
+    if namjepsi.channeling then
+        VManip:PlaySegment("channelidle")
+    end
+end
+
+local function psicast_end_channel()
+    local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
+    if !ability then return end
+
+    namjepsi.channeling = false
+    hook.Remove("VManipSegmentFinish","namjepsi_channel_idle")
+    VManip:Remove()
+    VManip:PlayAnim("channelend")
+
+    ability.channelEnd(LocalPlayer(), namjepsi.channel_args)
+
+    net.Start("namjepsi_end_channel")
+    net.WriteInt(namjepsi.current_slot, 4)
+    net.SendToServer()
+
+    namjepsi.channel_args = nil
+    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+end
 
 local function send_slow(time)
     if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
@@ -50,9 +77,6 @@ local function client_cast()
         return
     end
 
-    VManip:Remove()
-    VManip:PlayAnim(ability.castAnim or "cast2")
-
     net.Start("namjepsi_cast")
     net.WriteInt(namjepsi.current_slot, 4)
     net.WriteInt(namjepsi.range, 16)
@@ -63,10 +87,24 @@ local function client_cast()
 
     net.SendToServer()
     print("client cast")
-    local args = namjepsi.pos != nil and namjepsi.pos or namjepsi.target != nil and namjepsi.target or nil
-    ability.effect(LocalPlayer(), args)
 
-    LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+    local args = namjepsi.pos != nil and namjepsi.pos or namjepsi.target != nil and namjepsi.target or nil
+
+    VManip:Remove()
+    if ability.castType == 1 then
+        VManip:PlayAnim(ability.castAnim or "cast2")
+        ability.effect(LocalPlayer(), args)
+        LocalPlayer().namjepsi_cooldowns[ability.intName] = CurTime() + ability.cooldown
+    elseif ability.castType == 2 then
+        --VManip:PlayAnim(ability.channelStartAnim or "channelstart")
+        --TODO: ability effect timer on client
+        namjepsi.channeling = true
+        namjepsi.channel_args = args
+        if VManip:PlayAnim(ability.channelStartAnim or "channelstart") then
+            hook.Add("VManipSegmentFinish", "namjepsi_channel_idle", namjepsi_channel_idle)
+        end
+        ability.channelStart(LocalPlayer(), args)
+    end
 end
 
 local function is_slots_empty()
@@ -108,6 +146,11 @@ end
 local function psicast_start()
     if !IsValid(LocalPlayer()) or !LocalPlayer():Alive() then return end
     if namjepsi.casting or namjepsi.stimming then return end
+
+    if namjepsi.channeling then
+        psicast_end_channel()
+        return
+    end
 
     if is_slots_empty() then
         LocalPlayer():PrintMessage(HUD_PRINTTALK, "You have no abilities to cast. Add some in the inventory menu.")

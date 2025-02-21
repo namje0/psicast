@@ -1,4 +1,5 @@
 util.AddNetworkString( "namjepsi_cast" )
+util.AddNetworkString( "namjepsi_end_channel" )
 util.AddNetworkString( "namjepsi_update_inventory" )
 util.AddNetworkString( "namjepsi_init_slots" )
 util.AddNetworkString( "namjepsi_update_slot" )

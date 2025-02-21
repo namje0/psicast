@@ -1,4 +1,4 @@
-local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha, target_alpha = 0, 0, 0, 0, 0, 0
+local cd_alpha, stim_alpha, dose_alpha, bar_alpha, cast_alpha, target_alpha, channel_alpha = 0, 0, 0, 0, 0, 0, 0
 
 local target_lang = {
     ["prop_door_rotating"] = "Door",
@@ -204,7 +204,14 @@ local function namjepsi_hand_ui(hands)
         surface.SetMaterial(Material("vgui/energy.png"))
         surface.DrawTexturedRect( 320, 0, 50, 50 )
 
-        draw.SimpleText(ability and ability.cost() or "--", "namjepsi_ui", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+        local cost
+        if ability.castType == 1 then
+            cost = ability and ability.cost()
+        elseif ability.castType == 2 then
+            cost = ability and ability.cost() / .2 .. "/s"
+        end
+
+        draw.SimpleText(cost or "--", "namjepsi_ui", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         --cooldown
         surface.SetDrawColor(Color(78, 75, 50, cast_alpha))
@@ -226,9 +233,27 @@ local function namjepsi_fx()
     local ply = LocalPlayer()
     if !IsValid(ply) and !ply:Alive() then return end
     local cursor = Material( "particle/particle_glow_04" )
-    if !namjepsi.casting then return end
+    if !ply.namjepsi_slots or !namjepsi.current_slot then return end
+
     local ability = namjepsi.abilities[ply.namjepsi_slots[namjepsi.current_slot]]
     if !ability then return end
+
+    if namjepsi.channeling and !namjepsi.self_target then
+        channel_alpha = math.Approach(channel_alpha, 255, 255 * FrameTime() / 0.5)
+
+        local args = namjepsi.channel_args
+        if !IsValid(args) then return end
+        cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+        render.StartWorldRings()
+        render.AddWorldRing(type(args) != "Vector" and args:GetPos() or args, ability.channelRange + math.sin(RealTime() * 3), 2, 32)
+        render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, channel_alpha))
+        render.SetMaterial(cursor)
+        cam.End3D()
+    else
+        channel_alpha = 0
+    end
+
+    if !namjepsi.casting then return end
     local target_entities = istable(ability.targeting)
 
     if target_entities then
@@ -356,13 +381,13 @@ local function namjepsi_target_halos()
 
     local target = namjepsi.target == ply and nil or namjepsi.target
     if !target then return end
-    halo.Add( {target}, ability.theme, 3, 3, 3, true, true )
+    halo.Add( {target}, ability.theme, 3, 3, 3, true, false )
 end
 hook.Add( "PreDrawHalos", "namjepsi_target_halos", namjepsi_target_halos )
 
 hook.Add("PostDrawPlayerHands", "namjepsi_hand_ui", function()
     local wep = LocalPlayer():GetActiveWeapon()
-    if wep and wep.Base ~= "mg_base" then
+    if wep and wep.Base != "mg_base" then
         namjepsi_hand_ui(LocalPlayer():GetHands())
     end
 end)

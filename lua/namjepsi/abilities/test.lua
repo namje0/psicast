@@ -6,7 +6,7 @@ namjepsi.abilities["test"] = {
 	icon = "vgui/namjepsi_abilities/buckteeblast.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = 1,
 	selfOnly = false,
 	range = 500,

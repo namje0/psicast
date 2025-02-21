@@ -1,12 +1,12 @@
 namjepsi.abilities["target_test"] = {
 	intName = "target_test",
-	name = "Test Ability",
+	name = "Target Ability",
 	desc = "Test test test, test",
 	theme = Color(207,80,186),
 	icon = "vgui/namjepsi_abilities/buckteeblast.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = { "player", "npc", "prop_physics" },
 	selfOnly = false,
 	range = 500,

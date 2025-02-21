@@ -6,7 +6,7 @@ namjepsi.abilities["lockpick"] = {
 	icon = "vgui/namjepsi_abilities/lockpick.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = {"prop_door_rotating","func_door","func_door_rotating"},
 	selfOnly = false,
 	range = 400,

@@ -6,7 +6,7 @@ namjepsi.abilities["melon"] = {
 	icon = "vgui/namjepsi_abilities/melon.png",
 
 	adminOnly = false,
-	castType = "instant",
+	castType = 1,
 	targeting = 1,
 	selfOnly = false,
 	range = 500,
