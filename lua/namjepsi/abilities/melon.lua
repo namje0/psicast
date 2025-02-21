@@ -9,9 +9,9 @@ namjepsi.abilities["melon"] = {
 	castType = "instant",
 	targeting = 1,
 	selfOnly = false,
-	range = 1500,
+	range = 500,
 	radius = 20,
-	cooldown = 4,
+	cooldown = .1,
 	cost = function()
 		return 12
 	end,

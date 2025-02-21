@@ -7,6 +7,16 @@ namjepsi.range = 0
 namjepsi.target = nil
 namjepsi.pos = nil
 
+--[[local vmanip_anims = {
+    "cast2",
+    "castself",
+    "caststart",
+    "castcancel2",
+    "channelstart",
+    "channelidle",
+    "channelend"
+}]]
+
 local function send_slow(time)
     if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
         net.Start("namje_slow_time")
@@ -17,9 +27,18 @@ end
 
 local function psicast_cancel()
     LocalPlayer():EmitSound( "player/suit_denydevice.wav")
+
+    local vmanip_anim = VManip:GetCurrentAnim()
+    --if table.HasValue(vmanip_anims, vmanip_anim) then
+    if vmanip_anim then
+        VManip:Remove()
+    end
+    --end
+    VManip:PlayAnim("castcancel2")
+
     namjepsi.casting = false
     namjepsi.selfTarget = false
-    VManip:Remove()
+    --VManip:Remove()
     --singleplayer time slowdown
     send_slow(false)
 end
@@ -30,6 +49,9 @@ local function client_cast()
         psicast_cancel()
         return
     end
+
+    VManip:Remove()
+    VManip:PlayAnim(ability.castAnim or "cast2")
 
     net.Start("namjepsi_cast")
     net.WriteInt(namjepsi.current_slot, 4)
@@ -84,7 +106,7 @@ end
 
 local function psicast_start()
     if !IsValid(LocalPlayer()) or !LocalPlayer():Alive() then return end
-    if namjepsi.casting then return end
+    if namjepsi.casting or namjepsi.stimming then return end
 
     if is_slots_empty() then
         LocalPlayer():PrintMessage(HUD_PRINTTALK, "You have no abilities to cast. Add some in the inventory menu.")
@@ -95,8 +117,12 @@ local function psicast_start()
         psicast_cycle(1)
     end
 
+    local vmanip_anim = VManip:GetCurrentAnim()
+    if vmanip_anim then
+        VManip:Remove()
+    end
+    VManip:PlayAnim("caststart")
     namjepsi.casting = true
-    VManip:PlayAnim("cast")
 
     --singleplayer time slowdown
     send_slow(true)
@@ -106,7 +132,6 @@ end
 
 local function psicast_release()
     if !namjepsi.casting then return end
-    VManip:QuitHolding("cast")
     namjepsi.casting = false
 
     --singleplayer time slowdown

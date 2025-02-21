@@ -12,6 +12,7 @@ namjepsi.abilities["blink"] = {
 	range = 450,
 	radius = 15,
 	cooldown = 4,
+	castAnim = "castself",
 	cost = function()
 		return 20
 	end,
