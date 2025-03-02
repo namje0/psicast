@@ -8,7 +8,6 @@ namjepsi.abilities["channel_test"] = {
 	adminOnly = false,
 	castType = 2,
 	targeting = { "player", "npc" },
-	selfOnly = false,
 	range = 500,
 	channelRange = 550,
 	radius = 0,
@@ -63,7 +62,7 @@ namjepsi.abilities["channel_test"] = {
 			print(target:GetMaxHealth())
 		end
 		if SERVER then
-			local dmg = 10
+			local dmg = 2
 			local d = DamageInfo()
 			d:SetDamage( dmg )
 			d:SetAttacker( ply )

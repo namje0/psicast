@@ -7,8 +7,7 @@ namjepsi.abilities["ghost"] = {
 
 	adminOnly = false,
 	castType = 2,
-	targeting = { "player" },
-	selfOnly = false,
+	targeting = 2,
 	range = 500,
 	channelRange = 800,
 	radius = 0,
@@ -17,7 +16,7 @@ namjepsi.abilities["ghost"] = {
 		return 3
 	end,
 
-	channelStart = function(ply, ...)
+	channelStart = function(ply)
 		if CLIENT then
 			ply:ScreenFade( SCREENFADE.IN, Color( 190, 58, 190, 50), .6, 0 )
 			local cc = {
@@ -42,7 +41,7 @@ namjepsi.abilities["ghost"] = {
 		end
 	end,
 
-	channelEnd = function(ply, ...)
+	channelEnd = function(ply)
 		if CLIENT then
 			hook.Remove( "RenderScreenspaceEffects", "namjepsi_ghost" )
 			ply:ScreenFade( SCREENFADE.IN, Color( 190, 58, 190, 50), .6, 0 )

@@ -90,7 +90,7 @@ function namjepsi.cast(len, ply)
 			return
 		end
 		args = target
-	else
+	elseif ability.targeting == 1 then
 		local pos
 		if ability.areaTargeting then
 			pos = ability.areaTargeting(ply, range)
@@ -106,6 +106,8 @@ function namjepsi.cast(len, ply)
 
 		if !pos then return end
 		args = pos
+	elseif ability.targeting == 2 then
+		args = ply
 	end
 
 	if !args then return end

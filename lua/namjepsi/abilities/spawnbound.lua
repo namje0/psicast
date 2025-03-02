@@ -7,20 +7,16 @@ namjepsi.abilities["spawnbound"] = {
 
 	adminOnly = false,
 	castType = 1,
-	targeting = 1,
-	selfOnly = false,
+	targeting = 2,
 	range = 450,
 	radius = 20,
 	cooldown = 1,
+	castAnim = "castself",
 	cost = function()
 		return 1
 	end,
 
-	effect = function(ply, ...)
-		local args = ...
-		if CLIENT then
-			print("test effect client")
-		end
+	effect = function(ply)
 		if SERVER then
 			local spawns = ents.FindByClass("info_player_start")
 			local random_spawn = math.random(#spawns)

@@ -8,7 +8,6 @@ namjepsi.abilities["test"] = {
 	adminOnly = false,
 	castType = 1,
 	targeting = 1,
-	selfOnly = false,
 	range = 500,
 	radius = 100,
 	cooldown = 4.5,

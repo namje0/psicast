@@ -8,7 +8,6 @@ namjepsi.abilities["blink"] = {
 	adminOnly = false,
 	castType = 1,
 	targeting = 1,
-	selfOnly = false,
 	range = 450,
 	radius = 15,
 	cooldown = 4,

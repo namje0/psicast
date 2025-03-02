@@ -315,7 +315,7 @@ local function namjepsi_fx()
             cam.IgnoreZ(false)
             cam.End3D()
         end
-    else
+    elseif ability.targeting == 1 then
         local pos
         namjepsi.target = nil
         if ability.areaTargeting then
@@ -369,6 +369,8 @@ local function namjepsi_fx()
             cam.IgnoreZ(false)
             cam.End3D()
         end
+    elseif ability.targeting == 2 then
+        namjepsi.target = ply
     end
 end
 

@@ -8,7 +8,6 @@ namjepsi.abilities["melon"] = {
 	adminOnly = false,
 	castType = 1,
 	targeting = 1,
-	selfOnly = false,
 	range = 500,
 	radius = 20,
 	cooldown = .1,

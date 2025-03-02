@@ -204,7 +204,6 @@ local function psicast_binds(ply, bind, pressed)
     if !pressed then return end
 
     if namjepsi.casting then
-        --TODO: Target Self bind
         --impulse 100 = flashlight
         if (bind == "impulse 100") then
             psicast_cancel()
