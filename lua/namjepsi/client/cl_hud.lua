@@ -153,7 +153,7 @@ local function namjepsi_hand_ui(hands)
     if bone == nil then return end
     local hand = hands:GetBoneMatrix(bone)
 
-    if hand and namjepsi.casting then 
+    if hand and namjepsi.casting then
         local alpha_factor = .75
         if game.SinglePlayer() and GetConVar("namjepsi_cast_slow"):GetBool() then
             alpha_factor = .5
@@ -196,7 +196,9 @@ local function namjepsi_hand_ui(hands)
         end
 
         --cost
-        local can_cast = ability and LocalPlayer():GetNW2Float("namjepsi_energy") >= ability.cost()
+        local is_targeting = istable(ability.targeting)
+        local cost = ability and is_targeting and ability.cost(ply, namjepsi.target) or ability and ability.cost(ply)
+        local can_cast = cost and true and LocalPlayer():GetNW2Float("namjepsi_energy") >= cost and true or false
         surface.SetDrawColor(can_cast and Color(206, 324, 74, cast_alpha) or Color(78, 75, 50, cast_alpha))
         surface.DrawRect(320, 0, 130, 50)
 
@@ -204,14 +206,17 @@ local function namjepsi_hand_ui(hands)
         surface.SetMaterial(Material("vgui/energy.png"))
         surface.DrawTexturedRect( 320, 0, 50, 50 )
 
-        local cost
-        if ability.castType == 1 then
-            cost = ability and ability.cost()
-        elseif ability.castType == 2 then
-            cost = ability and ability.cost() / .2 .. "/s"
+        if !cost then
+            cost = "--"
+        else
+            if ability.castType == 1 then
+                cost = cost
+            elseif ability.castType == 2 then
+                cost = cost / .2 .. "/s"
+            end
         end
 
-        draw.SimpleText(cost or "--", "namjepsi_ui", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(cost, "namjepsi_ui", 445, 51, can_cast and Color(78, 75, 50, cast_alpha) or Color(183, 66, 73, cast_alpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 
         --cooldown
         surface.SetDrawColor(Color(78, 75, 50, cast_alpha))
@@ -239,16 +244,18 @@ local function namjepsi_fx()
     if !ability then return end
 
     if namjepsi.channeling and !namjepsi.self_target then
-        channel_alpha = math.Approach(channel_alpha, 255, 255 * FrameTime() / 0.5)
+        if ability.channelRange and ability.channelRange > 0 then
+            channel_alpha = math.Approach(channel_alpha, 255, 255 * FrameTime() / 0.5)
 
-        local args = namjepsi.channel_args
-        if !IsValid(args) then return end
-        cam.Start3D() -- Start the 3D function so we can draw onto the screen.
-        render.StartWorldRings()
-        render.AddWorldRing(type(args) != "Vector" and args:GetPos() or args, ability.channelRange + math.sin(RealTime() * 3), 2, 32)
-        render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, channel_alpha))
-        render.SetMaterial(cursor)
-        cam.End3D()
+            local args = namjepsi.channel_args
+            if !IsValid(args) then return end
+            cam.Start3D() -- Start the 3D function so we can draw onto the screen.
+            render.StartWorldRings()
+            render.AddWorldRing(type(args) != "Vector" and args:GetPos() or args, (ability.channelRange and ability.channelRange > 0) and ability.channelRange + math.sin(RealTime() * 3), 2, 32)
+            render.FinishWorldRings(Color(ability.theme.r, ability.theme.g, ability.theme.b, channel_alpha))
+            render.SetMaterial(cursor)
+            cam.End3D()
+        end
     else
         channel_alpha = 0
     end
@@ -370,6 +377,7 @@ local function namjepsi_fx()
             cam.End3D()
         end
     elseif ability.targeting == 2 then
+        namjepsi.invalid_pos = false
         namjepsi.target = ply
     end
 end

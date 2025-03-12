@@ -13,7 +13,7 @@ local function create_entity(ability)
     ent.IconOverride = ability.icon or "vgui/stimlogo.png"
     ent.Model = ability.model or "models/Items/battery.mdl"
 
-    scripted_ents.Register(ent, ability.intName)
+    scripted_ents.Register(ent, "namjepsi_ability_pickup_" .. ability.intName)
 end
 
 --TODO: fix case

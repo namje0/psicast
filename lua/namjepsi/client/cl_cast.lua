@@ -72,7 +72,10 @@ end
 
 local function client_cast()
     local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
-    if !ability or LocalPlayer().namjepsi_cooldowns[ability.intName] or LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() or namjepsi.invalid_pos then
+    local is_targeting = istable(ability.targeting)
+
+    local cost = ability and is_targeting and ability.cost(ply, namjepsi.target) or ability and ability.cost(ply)
+    if !ability or !cost or LocalPlayer().namjepsi_cooldowns[ability.intName] or LocalPlayer():GetNW2Float("namjepsi_energy") < cost or namjepsi.invalid_pos then
         psicast_cancel()
         return
     end
@@ -182,7 +185,11 @@ local function psicast_release()
     send_slow(false)
 
     local ability = namjepsi.abilities[LocalPlayer().namjepsi_slots[namjepsi.current_slot]]
-    if !ability or LocalPlayer().namjepsi_cooldowns[ability.intName] or LocalPlayer():GetNW2Float("namjepsi_energy") < ability.cost() or namjepsi.invalid_pos then
+
+    if !ability or LocalPlayer().namjepsi_cooldowns[ability.intName] or namjepsi.invalid_pos then
+        print("blah")
+        PrintTable(ability)
+        print(namjepsi.invalid_pos)
         psicast_cancel()
         return
     end

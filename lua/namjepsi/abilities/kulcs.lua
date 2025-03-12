@@ -1,6 +1,6 @@
-namjepsi.abilities["lockpick"] = {
-	intName = "lockpick",
-	name = "Lockpick",
+namjepsi.abilities["kulcs"] = {
+	intName = "kulcs",
+	name = "Kulcs",
 	desc = "Unlocks and opens doors",
 	theme = Color(77,197,117),
 	icon = "vgui/namjepsi_abilities/lockpick.png",
@@ -11,7 +11,7 @@ namjepsi.abilities["lockpick"] = {
 	range = 400,
 	radius = 0,
 	cooldown = 5,
-	cost = function()
+	cost = function(ply, ...)
 		return 35
 	end,
 

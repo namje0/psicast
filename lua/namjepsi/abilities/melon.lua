@@ -11,7 +11,7 @@ namjepsi.abilities["melon"] = {
 	range = 500,
 	radius = 20,
 	cooldown = .1,
-	cost = function()
+	cost = function(ply, ...)
 		return 12
 	end,
 

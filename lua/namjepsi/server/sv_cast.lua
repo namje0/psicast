@@ -111,7 +111,11 @@ function namjepsi.cast(len, ply)
 	end
 
 	if !args then return end
-	local cost = ability.cost()
+	local cost = ability and target_entities and ability.cost(ply, args) or ability and ability.cost(ply)
+	if !cost then
+		error("Invalid cost for " .. ability.intName)
+		return
+	end
 
 	if ability.castType == 1 then
 		ability.effect(ply, args)
@@ -132,7 +136,7 @@ function namjepsi.cast(len, ply)
 				namjepsi.end_channel(ply, ability, false)
 			end
 
-			if ability.channelRange then
+			if ability.channelRange and ability.channelRange > 0 then
 				if !IsValid(args) then return end
 				local dist = ply:GetPos():Distance(type(args) != "Vector" and args:GetPos() or args)
 				if dist > ability.channelRange then

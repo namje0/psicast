@@ -40,6 +40,19 @@ net.Receive("namjepsi_invalid_cast", function()
     print("Invalid cast for ability " .. ability)
     LocalPlayer().namjepsi_cooldowns[ability] = nil
 
+    local ability_data = namjepsi.abilities[ability]
+    if !ability_data then return end
+
+    if ability_data.castType == 2 then
+        print("handling channel invalid")
+        namjepsi.channeling = false
+        hook.Remove("VManipSegmentFinish","namjepsi_channel_idle")
+
+        ability_data.channelEnd(LocalPlayer(), namjepsi.channel_args)
+
+        namjepsi.channel_args = nil
+    end
+
     local vmanip_anim = VManip:GetCurrentAnim()
     --if table.HasValue(vmanip_anims, vmanip_anim) then
     if vmanip_anim then

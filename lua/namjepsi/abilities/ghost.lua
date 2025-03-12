@@ -3,7 +3,7 @@ namjepsi.abilities["ghost"] = {
 	name = "Ghost",
 	desc = "Render yourself invisible and undetectable",
 	theme = Color(168,53,143),
-	icon = "vgui/namjepsi_abilities/buckteeblast.png",
+	icon = "vgui/namjepsi_abilities/ghost.png",
 
 	adminOnly = false,
 	castType = 2,
@@ -12,7 +12,7 @@ namjepsi.abilities["ghost"] = {
 	channelRange = 800,
 	radius = 0,
 	cooldown = 4,
-	cost = function()
+	cost = function(ply, ...)
 		return 3
 	end,
 

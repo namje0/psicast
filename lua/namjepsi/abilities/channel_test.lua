@@ -7,12 +7,12 @@ namjepsi.abilities["channel_test"] = {
 
 	adminOnly = false,
 	castType = 2,
-	targeting = { "player", "npc" },
+	targeting = { "player", "npc", "prop_physics" },
 	range = 500,
 	channelRange = 550,
 	radius = 0,
 	cooldown = 4,
-	cost = function()
+	cost = function(ply, ...)
 		return 2
 	end,
 

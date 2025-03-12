@@ -7,6 +7,8 @@ util.AddNetworkString( "namjepsi_stim" )
 util.AddNetworkString( "namjepsi_complete_cd" )
 util.AddNetworkString( "namjepsi_invalid_cast" )
 
+util.AddNetworkString( "namjepsi_telekinesis_launch" )
+
 --singleplayer slowing down time
 if game.SinglePlayer() then
 	util.AddNetworkString( "namje_slow_time" )

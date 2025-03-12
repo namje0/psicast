@@ -12,7 +12,7 @@ namjepsi.abilities["spawnbound"] = {
 	radius = 20,
 	cooldown = 1,
 	castAnim = "castself",
-	cost = function()
+	cost = function(ply, ...)
 		return 1
 	end,
 
