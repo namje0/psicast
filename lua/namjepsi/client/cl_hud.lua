@@ -212,7 +212,7 @@ local function namjepsi_hand_ui(hands)
             if ability.castType == 1 then
                 cost = cost
             elseif ability.castType == 2 then
-                cost = cost / .2 .. "/s"
+                cost = cost / (ability.effectThrottle or .2) .. "/s"
             end
         end
 

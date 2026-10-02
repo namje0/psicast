@@ -14,6 +14,7 @@ namjepsi.abilities["template"] = {
 	range = 800, --maximum range the player can cast the ability
 	radius = 120,
 	cooldown = 3,
+
 	cost = function(ply, ...)
 		return 40
 	end,

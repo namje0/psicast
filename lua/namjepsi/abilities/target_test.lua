@@ -11,6 +11,7 @@ namjepsi.abilities["target_test"] = {
 	range = 500,
 	radius = 0,
 	cooldown = 4.5,
+
 	cost = function(ply, ...)
 		return 25
 	end,

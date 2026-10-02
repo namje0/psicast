@@ -53,6 +53,10 @@ end
 
 local function regen_slots(parent)
     local num_slots = LocalPlayer().namjepsi_slots
+    if not num_slots then
+        print("err")
+        return
+    end
 
     if namjepsi.psi_menu.slot_grid then namjepsi.psi_menu.slot_grid:Remove() end
 

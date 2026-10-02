@@ -12,6 +12,10 @@ namjepsi.abilities["channel_test"] = {
 	channelRange = 550,
 	radius = 0,
 	cooldown = 4,
+	effectThrottle = 1,
+	requiresLineOfSight = true,
+	mustStayInRange = true,
+
 	cost = function(ply, ...)
 		return 2
 	end,

@@ -31,7 +31,7 @@ namjepsi.abilities["telekinesis"] = {
 				local normalized_mass = math.Clamp(mass / max_mass, 0, 1);
 				local weight = (normalized_mass - normalized_vol) * 0.5 + 0.5;
 
-				return math.Round(math.Clamp((normalized_vol * (1 - weight) + normalized_mass * weight) * 5, .1, 5), 1)
+				return math.Round(math.Clamp((normalized_vol * (1 - weight) + normalized_mass * weight) * 5, .2, 5), 1)
 			else
 				target:PhysicsInit(6)
 			end

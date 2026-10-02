@@ -127,7 +127,13 @@ function namjepsi.cast(len, ply)
 			ability.effect(ply, args)
 		end)]]
 		ply.namjepsi_channel_args = args
-		timer.Create("namjepsi_" .. ability.intName .. "_channel_" .. ply:UserID(), .2, 0, function()
+		if ability.effect then
+			ability.effect(ply, args)
+		end
+
+		--todo: since we have custom throttling for effects do cs checks for linetrace/range
+
+		timer.Create("namjepsi_" .. ability.intName .. "_channel_" .. ply:UserID(), ability.effectThrottle or .2, 0, function()
 			if ability.effect then
 				ability.effect(ply, args)
 			end
