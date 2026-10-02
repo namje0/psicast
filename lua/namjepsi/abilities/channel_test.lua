@@ -9,15 +9,15 @@ namjepsi.abilities["channel_test"] = {
 	castType = 2,
 	targeting = { "player", "npc", "prop_physics" },
 	range = 500,
-	channelRange = 550,
+	channelRange = 2000,
 	radius = 0,
 	cooldown = 4,
-	effectThrottle = 1,
+	effectThrottle = 0.1,
 	requiresLineOfSight = true,
-	mustStayInRange = true,
+	LOSMask = MASK_ALL,
 
 	cost = function(ply, ...)
-		return 2
+		return 1
 	end,
 
 	channelStart = function(ply, ...)

@@ -149,6 +149,52 @@ function namjepsi.cast(len, ply)
 					namjepsi.end_channel(ply, ability, false)
 				end
 			end
+
+			if ability.requiresLineOfSight then
+				if !IsValid(args) then return end
+				local isVector = type(args) == "Vector"
+				local mask = ability.LOSMask or MASK_SHOT
+
+				if isVector then
+					local tr = util.TraceLine({
+						start = ply:GetShootPos(),
+						endpos = args,
+						filter = ply,
+						mask = mask
+					})
+
+					if tr.Hit then
+						namjepsi.end_channel(ply, ability, false)
+						return
+					end
+				else
+					local targetPoints = {
+						args:WorldSpaceCenter(),
+						(args.EyePos and args:EyePos()) or (args:GetPos() + Vector(0, 0, args:OBBMaxs().z * 0.8)),
+						args:GetPos() + Vector(0, 0, 5)
+					}
+					
+					local canSee = false
+					for i = 1, #targetPoints do
+						local tr = util.TraceLine({
+							start = ply:GetShootPos(),
+							endpos = targetPoints[i],
+							filter = {ply, args},
+							mask = mask
+						})
+
+						if not tr.Hit then
+							canSee = true
+							break
+						end
+					end
+
+					if not canSee then
+						namjepsi.end_channel(ply, ability, false)
+						return
+					end
+				end
+			end
 		end)
 		hook.Add("DoPlayerDeath", "namjepsi_" .. ability.intName .. "_channel_death_" .. ply:UserID(), function(dead_ply)
 			if dead_ply != ply then return end
